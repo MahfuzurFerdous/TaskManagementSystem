@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "User Dashboard";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0 text-dark"><i class="fas fa-user"></i> User Dashboard</h1>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card card-outline card-info">
+        <div class="card-body text-center">
+            <p class="lead mb-4">👋 Hello, <strong>@User.Identity.Name</strong>! You are logged in as a user.</p>
+
+            <div class="row justify-content-center">
+                <div class="col-md-4 mb-3">
+                    <a asp-controller="TaskCard" asp-action="UserIndex" class="btn btn-primary btn-lg btn-block">
+                        <i class="fas fa-clipboard-list"></i> My Tasks
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

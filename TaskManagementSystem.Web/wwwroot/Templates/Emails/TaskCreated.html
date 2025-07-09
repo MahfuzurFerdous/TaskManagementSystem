@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>New Task Created</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f8fa;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border: 1px solid #e1e4e8;
+            padding: 20px;
+            border-radius: 6px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #2c3e50;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🆕 New Task Created</h2>
+
+        <p>Hello @UserName,</p>
+
+        <p>A new task has been created and assigned to you as manager. Below are the task details:</p>
+
+        <ul>
+            <li><strong>Task Title:</strong> @TaskTitle</li>
+            <li><strong>Task ID:</strong> @TaskId</li>
+            <li><strong>Assigned By:</strong> @AssignedBy</li>
+            <li><strong>Created At:</strong> @CreatedAt</li>
+            <li><strong>Due Date:</strong> @DueDate</li>
+        </ul>
+
+        <p>Please log in to your dashboard to review and assign it to a user.</p>
+
+        <p>Best regards,<br />Task Management System</p>
+
+        <div class="footer">
+            This is an automated message. Please do not reply to this email.
+        </div>
+    </div>
+</body>
+</html>

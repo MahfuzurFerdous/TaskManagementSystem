@@ -1,0 +1,22 @@
+﻿@model int
+
+<div class="card card-primary card-outline standup-log-container" data-task-id="@Model">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-pencil-alt"></i> Submit Daily Standup
+        </h3>
+    </div>
+
+    <div class="card-body">
+        <div class="form-group">
+            <label for="standup-note">What did you work on today?</label>
+            <textarea id="standup-note" class="form-control" rows="3" placeholder="Enter your daily update..."></textarea>
+        </div>
+
+        <button id="submit-standup-btn" class="btn btn-primary" data-task-id="@Model">
+            <i class="fas fa-paper-plane"></i> Submit
+        </button>
+
+        <div id="standup-message" class="mt-3"></div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+﻿@model EditTaskCardViewModel
+
+<div class="modal-content">
+    <form id="editTaskForm" asp-action="Edit" asp-controller="TaskCard" method="post" novalidate>
+        <input type="hidden" asp-for="Id" />
+
+        <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title" id="editTaskModalLabel">
+                <i class="fas fa-edit mr-2"></i> Edit Task
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="AssignedToUserName" class="control-label"></label>
+                <select asp-for="AssignedToUserName" asp-items="Model.AvailableUsers" class="form-control select2bs4" style="width: 100%;"></select>
+                <span asp-validation-for="AssignedToUserName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DueDate" class="control-label"></label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="far fa-calendar-alt"></i></span>
+                    </div>
+                    <input asp-for="DueDate" type="date" class="form-control" />
+                </div>
+                <span asp-validation-for="DueDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <div class="form-check">
+                    <input asp-for="IsCompleted" class="form-check-input" type="checkbox" id="IsCompleted" />
+                    <label asp-for="IsCompleted" class="form-check-label"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        $(function () {
+            $('.select2bs4').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $('#editTaskForm').closest('.modal') 
+            });
+        });
+    </script>
+}

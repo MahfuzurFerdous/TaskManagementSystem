@@ -1,0 +1,48 @@
+﻿@model TaskStandupLogListModel
+
+<div class="card card-primary card-outline">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-clipboard-list"></i> Standup Logs</h3>
+    </div>
+    <div class="card-body">
+        @if (!Model.Logs.Any())
+        {
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle mr-1"></i>
+                No standup logs found for this task.
+            </div>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var log in Model.Logs.OrderByDescending(l => l.SubmittedAt))
+                {
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>@log.SubmittedBy</strong>
+                            <small class="text-muted">@log.SubmittedAt.ToString("g")</small>
+                        </div>
+                        <div>@log.Note</div>
+                    </li>
+                }
+            </ul>
+        }
+
+    </div>
+</div>
+
+<ul class="pagination justify-content-center">
+    <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+        <a class="page-link standup-page-link" href="#" data-page="@(Model.PageNumber - 1)">Previous</a>
+    </li>
+    @for (int i = 1; i <= Model.TotalPages; i++)
+    {
+        <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+            <a class="page-link standup-page-link" href="#" data-page="@i">@i</a>
+        </li>
+    }
+    <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+        <a class="page-link standup-page-link" href="#" data-page="@(Model.PageNumber + 1)">Next</a>
+    </li>
+</ul>
+

@@ -1,0 +1,507 @@
+﻿@model TaskCardListModel
+
+@{
+    ViewData["Title"] = "Task Cards";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="m-0 text-dark"><i class="fas fa-tasks mr-2"></i> Task Cards</h1>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <a class="btn btn-success" asp-action="Create">
+                    <i class="fas fa-plus-circle"></i> Add New Task
+                </a>
+            }
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="card card-primary card-outline">
+        <div class="card-body table-responsive" style="max-height: 75vh; overflow-y: auto;">
+            <table class="table table-hover table-bordered text-nowrap w-100">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Assigned To</th>
+                        <th>Assigned By</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Standup</th>
+                        <th>Completion Request</th>
+                        <th class="text-center">Actions</th>
+						<th class="text-center">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var card in Model.TaskCards)
+                    {
+                        <tr>
+                            <td>@card.Title</td>
+                            <td>@card.Description</td>
+                            <td>@card.AssignedToUserName</td>
+                            <td>@card.AssignedByUserName</td>
+                            <td>@(card.DueDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
+                            <td>
+                                <span class="badge badge-@TaskStatusHelper.GetBadgeColor((TaskManagementSystem.Domain.Enums.TaskStatus)card.Status)">
+                                    @card.Status.ToString()
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-dark view-standup-btn" data-task-id="@card.Id">
+                                    <i class="fas fa-clipboard-list"></i> Standups
+                                </button>
+
+                            </td>
+                            <td class="text-center">
+                                @* First, check if the task is rejected by either Manager or Admin *@
+                                @if (card.IsRejectedByManager || card.IsRejectedByAdmin)
+                                {
+                                    <div class="text-center">
+
+
+                                        @if (card.IsRejectedByAdmin && !string.IsNullOrEmpty(card.AdminRejectionReason))
+                                        {
+                                            <div class="text-danger mt-1 small">
+                                                <i class="fas fa-info-circle"></i> @card.AdminRejectionReason
+                                            </div>
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-times-circle"></i> Rejected by Admin
+                                            </span>
+                                        }
+
+                                        @if (card.IsRejectedByManager && !string.IsNullOrEmpty(card.ManagerRejectionReason))
+                                        {
+                                            <div class="text-danger mt-1 small">
+                                                <i class="fas fa-info-circle"></i> @card.ManagerRejectionReason
+                                            </div>
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-times-circle"></i> Rejected by Manager
+                                            </span>
+                                        }
+                                    </div>
+                                }
+                                @* If not rejected, check if completion is requested but not yet approved *@
+                                else if (card.IsRequestedForCompletion && !card.IsCompleted)
+                                {
+                                    if (User.IsInRole("Manager") && card.AssignedByUserName == User.Identity.Name && !card.IsManagerApproved)
+                                    {
+                                        <button class="btn btn-sm btn-outline-success approve-btn"
+                                                data-id="@card.Id"
+                                                data-level="manager"
+                                                title="Manager Approval">
+                                            <i class="fas fa-thumbs-up"></i> Manager Approve
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-danger reject-btn"
+                                                data-id="@card.Id"
+                                                data-level="manager"
+                                                title="Reject as Manager">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    }
+                                    else if (User.IsInRole("Admin") && card.IsManagerApproved && !card.IsAdminApproved)
+                                    {
+                                        <button class="btn btn-sm btn-outline-primary approve-btn"
+                                                data-id="@card.Id"
+                                                data-level="admin"
+                                                title="Admin Final Approval">
+                                            <i class="fas fa-check"></i> Admin Approve
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-danger reject-btn"
+                                                data-id="@card.Id"
+                                                data-level="admin"
+                                                title="Reject as Admin">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+
+                                        <button class="btn btn-sm btn-outline-warning reassign-btn"
+                                                data-id="@card.Id"
+                                                title="Reassign Task">
+                                            <i class="fas fa-redo"></i> Reassign
+                                        </button>
+                                    }
+                                }
+                                @* If approved by admin, show final approval badge *@
+                                else if (card.IsAdminApproved)
+                                {
+                                    <span class="badge badge-success text-dark">
+                                        <i class="fas fa-check-circle"></i> Approved
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+
+
+                                @if ((User.IsInRole("Manager") && card.AssignedToUserName == User.Identity.Name) || User.IsInRole("Admin"))
+                                {
+                                    <button class="btn assign-btn" data-id="@card.Id">
+                                        <i class="fas fa-user-cog"></i> Assign
+                                    </button>
+                                }
+
+
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <button class="btn btn-sm btn-info edit-btn mr-1" data-id="@card.Id">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-danger delete-btn" data-id="@card.Id">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                }
+
+                            </td>
+                            <td class="text-center">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                <button class="btn btn-sm btn-secondary details-btn" data-id="@card.Id" title="View Details">
+                                    <i class="fas fa-eye"></i> Details
+                                </button>
+                                }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination justify-content-center mt-3">
+            <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-pageSize="@Model.PageSize">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@i" asp-route-pageSize="@Model.PageSize">@i</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-pageSize="@Model.PageSize">Next</a>
+            </li>
+        </ul>
+    </nav>
+}
+
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="editModalContent">
+            <!-- Edit form loaded via AJAX -->
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="assignTaskModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" id="assignModalContent">
+        </div>
+    </div>
+</div>
+<!-- Details Modal -->
+<div class="modal fade" id="taskDetailsModal" tabindex="-1" role="dialog" aria-labelledby="taskDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content" id="detailsModalContent">
+            <!-- Details content loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Standup Modal -->
+<div class="modal fade" id="standupModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="standupModalContent">
+            <!-- Content loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Approve button click handler
+            $(document).on('click', '.approve-btn', function () {
+                const cardId = $(this).data('id');
+                const level = $(this).data('level');
+
+                console.log("Clicked approve button", cardId, level);
+
+                $.ajax({
+                    url: '/TaskCard/ApproveCompletion',
+                    type: 'POST',
+                    data: { id: cardId, level: level },
+                    success: function (response) {
+                        if (response.success) {
+                            const row = $(`button[data-id="${cardId}"]`).closest('tr');
+
+                            if (level === "manager") {
+                                row.find('.approve-btn[data-level="manager"]').replaceWith(
+                                    `<span class="badge badge-success text-dark"><i class="fas fa-check-circle"></i> Manager Approved</span>`
+                                );
+                            } else if (level === "admin") {
+                                // Update the Completion Request column (assuming 7th column index = 6)
+                                row.find('td:eq(6)').html(`
+                                    <span class="badge badge-success text-dark"><i class="fas fa-check-circle"></i> Approved</span>
+                                `);
+
+                                // Optionally, remove admin approve button if present
+                                row.find('.approve-btn[data-level="admin"]').remove();
+                            }
+                        } else {
+                            alert(response.message || "Approval failed.");
+                        }
+                    },
+                    error: function () {
+                        alert("An error occurred while approving the task.");
+                    }
+                });
+            });
+
+        $(document).on('click', '.reassign-btn', function () {
+            const cardId = $(this).data('id');
+
+            if (!confirm('Are you sure you want to reassign this task? This will reset approvals.')) return;
+
+            $.get(`/TaskCard/ReassignTaskModal`, { id: cardId }, function (html) {
+                $('#assignModalContent').html(html);
+                $('#assignTaskModal').modal('show');
+
+                // Initialize select2 inside modal after content loads
+                $('.select2bs4').select2({
+                    theme: 'bootstrap4',
+                    width: '100%'
+                });
+            });
+        });
+
+        $(document).on('submit', '#assignTaskForm', function (e) {
+            e.preventDefault();
+            var form = $(this);
+
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function (res) {
+                    if (res.success) {
+                        $('#assignTaskModal').modal('hide');
+                        location.reload(); // or update UI dynamically
+                    } else {
+                        // Partial view with validation errors or other issues
+                        $('#assignModalContent').html(res);
+
+                        // Re-initialize select2 after replacing content
+                        $('.select2bs4').select2({
+                            theme: 'bootstrap4',
+                            width: '100%'
+                        });
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while reassigning the task.");
+                }
+            });
+        });
+
+
+            // Delete button click handler
+            $(document).on('click', '.delete-btn', function () {
+                if (!confirm('Are you sure you want to delete this task?')) return;
+
+                const cardId = $(this).data('id');
+                const row = $(this).closest('tr');
+
+                $.ajax({
+                    url: '/TaskCard/Delete',
+                    type: 'POST',
+                    data: { id: cardId },
+                    success: function (response) {
+                        if (response.success) {
+                            row.remove();
+                        } else {
+                            alert(response.message || "Failed to delete.");
+                        }
+                    },
+                    error: function () {
+                        alert("An error occurred while deleting the task.");
+                    }
+                });
+            });
+
+            // Edit button click handler - load modal
+            $(document).on('click', '.edit-btn', function () {
+                const cardId = $(this).data('id');
+                $.ajax({
+                    url: '/TaskCard/Edit',
+                    type: 'GET',
+                    data: { id: cardId },
+                    success: function (html) {
+                        $('#editModalContent').html(html);
+                        $('#editTaskModal').modal('show');
+                    },
+                    error: function () {
+                        alert("An error occurred while loading the edit form.");
+                    }
+                });
+            });
+
+            // Edit form submit via AJAX
+            $(document).on('submit', '#editTaskForm', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var formData = new FormData(form[0]);
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            $('#editTaskModal').modal('hide');
+                            location.reload();
+                        } else {
+                            $('#editModalContent').html(response);
+                        }
+                    },
+                    error: function () {
+                        alert("An error occurred while saving the changes.");
+                    }
+                });
+            });
+
+            // Assign button click - load modal
+            $(document).on('click', '.assign-btn', function () {
+                const taskId = $(this).data('id');
+                $.get(`/TaskCard/AssignTaskModal`, { id: taskId }, function (html) {
+                    $('#assignModalContent').html(html);
+                    $('#assignTaskModal').modal('show');
+                });
+            });
+
+            $(document).on('submit', '#assignTaskForm', function (e) {
+                e.preventDefault();
+                const form = $(this);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $('#assignTaskModal').modal('hide');
+                            location.reload();
+                        } else {
+                            $('#assignModalContent').html(res);
+                        }
+                    },
+                    error: function () {
+                        alert("An error occurred while assigning.");
+                    }
+                });
+            });
+
+                    $(document).on('click', '.details-btn', function () {
+            const taskId = $(this).data('id');
+
+            $.ajax({
+                url: `/TaskCard/Details`,
+                type: 'GET',
+                data: { id: taskId },
+                success: function (html) {
+                    $('#detailsModalContent').html(html);
+                    $('#taskDetailsModal').modal('show');
+                },
+                error: function () {
+                    alert("An error occurred while loading task details.");
+                }
+            });
+        });
+
+$(document).on('click', '.view-standup-btn', function () {
+        const taskId = $(this).data('task-id'); 
+
+
+    $.ajax({
+        url: '/TaskCard/GetStandupHistoryPartial',
+        type: 'GET',
+        data: { taskId: taskId ,pageNumber: 1},
+        success: function (html) {
+            $('#standupModalContent').html(html);
+            $('#standupModalContent').data('task-id', taskId);
+            $('#standupModal').modal('show');
+        },
+        error: function () {
+            alert("Failed to load standup logs.");
+        }
+    });
+});
+
+        $(document).on('click', '.standup-page-link', function (e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            const taskId = $('#standupModalContent').data('task-id');
+
+            $.ajax({
+                url: '/TaskCard/GetStandupHistoryPartial',
+                type: 'GET',
+                data: { taskId: taskId, pageNumber: page },
+                success: function (html) {
+                    $('#standupModalContent').html(html);
+                            $('#standupModalContent').data('task-id', taskId);
+                },
+                error: function () {
+                    alert("Failed to load standup logs.");
+                }
+            });
+        });
+
+        $(document).on('click', '.reject-btn', function () {
+            const cardId = $(this).data('id');
+            const level = $(this).data('level');
+
+            const reason = prompt("Please enter a reason for rejection:");
+            if (!reason || reason.trim() === "") {
+                alert("Rejection reason is required.");
+                return;
+            }
+
+            $.ajax({
+                url: '/TaskCard/RejectCompletion',
+                type: 'POST',
+                data: { id: cardId, level: level, reason: reason },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message || "Task rejected successfully.");
+                        location.reload(); 
+                    } else {
+                        alert(response.message || "Rejection failed.");
+                    }
+                },
+                error: function () {
+                    alert("An error occurred while rejecting the task.");
+                }
+            });
+        });
+
+
+        });
+    </script>
+}
+
+
+

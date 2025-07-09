@@ -1,0 +1,210 @@
+﻿@model TaskCardListViewModel
+
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+
+<div class="content-header">
+    <div class="container-fluid">
+        <h3 class="text-center text-primary mb-4">
+            <i class="fas fa-tasks mr-2"></i> My Assigned Task Cards
+        </h3>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div id="alerts"></div>
+
+    @if (!Model.TaskCards.Any())
+    {
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle mr-2"></i> You have no assigned task cards.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var card in Model.TaskCards)
+            {
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <div class="card card-outline @(card.IsCompleted ? "card-success" : "card-warning") h-100" data-task-id="@card.Id">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title m-0">@card.Title</h5>
+                            <span class="badge badge-@TaskStatusHelper.GetBadgeColor(card.Status)">
+                                <i class="fas fa-info-circle"></i> @card.Status.ToString()
+                            </span>
+                        </div>
+
+                        <div class="card-body">
+                            <p><strong>Description:</strong> @card.Description</p>
+                            <p><strong>Due Date:</strong> @card.DueDate?.ToString("yyyy-MM-dd")</p>
+                            <p class="requested-cell"><strong>Requested Completion:</strong> @(card.IsRequestedForCompletion ? "Yes" : "No")</p>
+                        </div>
+
+                        <div class="card-footer text-center action-cell">
+
+                            @if (!card.IsCompleted)
+                            {
+                                @if (!card.IsStarted && !card.IsRequestedForCompletion)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary start-task-btn">
+                                        <i class="fas fa-play-circle"></i> Start Task
+                                    </button>
+                                }
+                                else if (!card.IsRequestedForCompletion)
+                                {
+                                    <button class="btn btn-sm btn-outline-info request-completion-btn">
+                                        <i class="fas fa-paper-plane"></i> Request Completion
+                                    </button>
+                                }
+                                else if (card.IsRequestedForCompletion )
+                                {
+                                    <span class="text-muted"><i class="fas fa-hourglass-half mr-1"></i> Waiting for Approval</span>
+                                }
+                            }
+                        </div>
+                        <div>
+                            @if (!card.IsRequestedForCompletion && card.IsStarted)
+                            {
+                                <button class="btn btn-sm btn-outline-info open-standup-form" data-task-id="@card.Id">
+                                    <i class="fas fa-sticky-note"></i> Add Standup
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Pagination *@
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="d-flex justify-content-center">
+                <ul class="pagination">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex + 1 ? "active" : "")">
+                            <a class="page-link" href="?page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>
+
+<!-- Standup Log Modal -->
+<div class="modal fade" id="standupFormModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content" id="standupFormContent">
+            <!-- AJAX-loaded form -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            // Start Task Button
+            $('.start-task-btn').click(function () {
+                const card = $(this).closest('.card');
+                const taskId = card.data('task-id');
+
+                $.ajax({
+                    url: '@Url.Action("StartTask", "TaskCard")',
+                    type: 'POST',
+                    data: { id: taskId },
+                    success: function (response) {
+                        if (response.success) {
+                            showAlert('success', response.message || 'Task started.');
+                            location.reload();
+                        } else {
+                            showAlert('danger', response.message || 'Failed to start task.');
+                        }
+                    },
+                    error: function () {
+                        showAlert('danger', 'An error occurred while starting the task.');
+                    }
+                });
+            });
+
+            // Request Completion Button
+            $('.request-completion-btn').click(function () {
+                const card = $(this).closest('.card');
+                const taskId = card.data('task-id');
+
+                $.ajax({
+                    url: '@Url.Action("RequestCompletion", "TaskCard")',
+                    type: 'POST',
+                    data: { id: taskId },
+                    success: function (response) {
+                        if (response.success) {
+                            card.find('.requested-cell').html('<strong>Requested Completion:</strong> Yes');
+                            card.find('.action-cell').html('<span class="text-muted"><i class="fas fa-hourglass-half mr-1"></i> Waiting for Manager</span>');
+                            showAlert('success', response.message || 'Request sent.');
+                        } else {
+                            showAlert('danger', response.message || 'Failed to request completion.');
+                        }
+                    },
+                    error: function () {
+                        showAlert('danger', 'An error occurred while requesting completion.');
+                    }
+                });
+            });
+
+            // Alert Helper
+            function showAlert(type, message) {
+                const alertHtml = `
+                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} mr-2"></i> ${message}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>`;
+                $('#alerts').html(alertHtml);
+            }
+
+        $(document).on('click', '#submit-standup-btn', function () {
+            const taskId = $(this).data('task-id');
+            const note = $('#standup-note').val();
+
+            if (!note.trim()) {
+                $('#standup-message').html('<div class="alert alert-warning">Note cannot be empty.</div>');
+                return;
+            }
+
+            $.ajax({
+                url: '/TaskCard/SubmitStandupLog',
+                type: 'POST',
+                data: { taskId: taskId, note: note },
+                success: function (response) {
+                    if (response.success) {
+                        $('#standup-note').val('');
+                        $('#standup-message').html('<div class="alert alert-success">Standup submitted successfully.</div>');
+                    } else {
+                        $('#standup-message').html(`<div class="alert alert-danger">${response.message}</div>`);
+                    }
+                },
+                error: function () {
+                    $('#standup-message').html('<div class="alert alert-danger">An error occurred. Please try again.</div>');
+                }
+            });
+        });
+
+        $(document).on('click', '.open-standup-form', function () {
+            const taskId = $(this).data('task-id');
+
+            $.get('/TaskCard/GetStandupFormPartial', { taskId: taskId }, function (html) {
+                $('#standupFormContent').html(html);
+                $('#standupFormModal').modal('show');
+            });
+        });
+
+
+
+
+        });
+    </script>
+}

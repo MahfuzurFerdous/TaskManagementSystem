@@ -1,0 +1,93 @@
+﻿@model TaskCardViewModel
+
+<div class="modal-header bg-primary">
+    <h5 class="modal-title text-white">
+        <i class="fas fa-tasks mr-2"></i> Task Details
+    </h5>
+    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+    <dl class="row mb-0">
+        <!-- Basic Info -->
+        <dt class="col-sm-4 text-muted">Title</dt>
+        <dd class="col-sm-8 font-weight-bold">@Model.Title</dd>
+
+        <dt class="col-sm-4 text-muted">Description</dt>
+        <dd class="col-sm-8">@Model.Description</dd>
+
+        <dt class="col-sm-4 text-muted">Assigned To</dt>
+        <dd class="col-sm-8">@(!string.IsNullOrEmpty(Model.AssignedToUserName) ? Model.AssignedToUserName : "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Assigned By</dt>
+        <dd class="col-sm-8">@(!string.IsNullOrEmpty(Model.AssignedByUserName) ? Model.AssignedByUserName : "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Due Date</dt>
+        <dd class="col-sm-8">@(Model.DueDate?.ToString("dd MMM yyyy") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Status</dt>
+        <dd class="col-sm-8">
+            <span class="badge badge-@TaskStatusHelper.GetBadgeColor(Model.Status)">
+                @Model.Status
+            </span>
+        </dd>
+
+        <!-- Lifecycle Timestamps -->
+        <dt class="col-sm-4 text-muted">Created At</dt>
+        <dd class="col-sm-8">@Model.CreatedAt.ToString("g")</dd>
+
+        <dt class="col-sm-4 text-muted">Assigned At</dt>
+        <dd class="col-sm-8">@(Model.AssignedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Reassigned At</dt>
+        <dd class="col-sm-8">@(Model.ReassignedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Started At</dt>
+        <dd class="col-sm-8">@(Model.StartedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Completion Requested At</dt>
+        <dd class="col-sm-8">@(Model.CompletionRequestedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Manager Approved At</dt>
+        <dd class="col-sm-8">@(Model.ManagerApprovedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Manager Approved By</dt>
+        <dd class="col-sm-8">@(Model.ManagerApprovedBy ?? "N/A")</dd>
+        
+        <dt class="col-sm-4 text-muted">Manager Rejected For</dt>
+        <dd class="col-sm-8">@(Model.ManagerRejectionReason ?? "N/A")</dd>
+        
+        <dt class="col-sm-4 text-muted">Manager Rejected By</dt>
+        <dd class="col-sm-8">@(Model.ManagerRejectedBy ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Manager Rejected At</dt>
+        <dd class="col-sm-8">@(Model.ManagerRejectedAt?.ToString("g") ?? "N/A")</dd>
+        
+        <dt class="col-sm-4 text-muted">Adnin Rejected For</dt>
+        <dd class="col-sm-8">@(Model.AdminRejectionReason ?? "N/A")</dd>
+        
+        <dt class="col-sm-4 text-muted">Adnin Rejected By</dt>
+        <dd class="col-sm-8">@(Model.AdminRejectedBy ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Admin Rejected At</dt>
+        <dd class="col-sm-8">@(Model.AdminRejectedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Completed At</dt>
+        <dd class="col-sm-8">@(Model.AdminApprovedAt?.ToString("g") ?? "N/A")</dd>
+
+        <!-- Last Update Info -->
+        <dt class="col-sm-4 text-muted">Last Updated At</dt>
+        <dd class="col-sm-8">@(Model.LastUpdatedAt?.ToString("g") ?? "N/A")</dd>
+
+        <dt class="col-sm-4 text-muted">Last Modified By</dt>
+        <dd class="col-sm-8">@(Model.LastModifiedBy ?? "N/A")</dd>
+    </dl>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+        <i class="fas fa-times-circle mr-1"></i> Close
+    </button>
+</div>

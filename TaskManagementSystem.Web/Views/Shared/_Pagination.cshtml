@@ -1,0 +1,42 @@
+﻿@model PaginationModel
+
+@{
+    var totalPages = (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+}
+
+@if (totalPages > 1)
+{
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            @if (Model.PageNumber > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-controller="@Model.ControllerName"
+                       asp-action="@Model.ActionName"
+                       asp-route-pageNumber="@(Model.PageNumber - 1)"
+                       asp-all-route-data="Model.RouteValues">Previous</a>
+                </li>
+            }
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                    <a class="page-link" asp-controller="@Model.ControllerName"
+                       asp-action="@Model.ActionName"
+                       asp-route-pageNumber="@i"
+                       asp-all-route-data="Model.RouteValues">@i</a>
+                </li>
+            }
+
+            @if (Model.PageNumber < totalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-controller="@Model.ControllerName"
+                       asp-action="@Model.ActionName"
+                       asp-route-pageNumber="@(Model.PageNumber + 1)"
+                       asp-all-route-data="Model.RouteValues">Next</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
