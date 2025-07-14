@@ -20,4 +20,20 @@
     <ProjectReference Include="..\TaskManagementSystem.Domain\TaskManagementSystem.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="wwwroot\Dockerfile">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Dockerfile.cs</LastGenOutput>
+    </Content>
+    <Content Update="wwwroot\Dockerfile.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Dockerfile</DependentUpon>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
 </Project>
