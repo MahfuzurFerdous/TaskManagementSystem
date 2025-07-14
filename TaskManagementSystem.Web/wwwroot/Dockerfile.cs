@@ -4,9 +4,9 @@ WORKDIR /src
 
 # Copy csproj and restore
 COPY ["TaskManagementSystem.Web/TaskManagementSystem.Web.csproj", "TaskManagementSystem.Web/"]
-COPY ["TaskManagementSystem.Application/TaskManagementSystem.Application.csproj", "TaskManagementSystem.Application/"]
-COPY ["TaskManagementSystem.Infrastructure/TaskManagementSystem.Infrastructure.csproj", "TaskManagementSystem.Infrastructure/"]
-COPY ["TaskManagementSystem.DataAccess/TaskManagementSystem.DataAccess.csproj", "TaskManagementSystem.DataAccess/"]
+COPY ["Application/TaskManagementSystem.Application.csproj", "TaskManagementSystem.Application/"]
+COPY ["Infrastructure/TaskManagementSystem.Infrastructure.csproj", "TaskManagementSystem.Infrastructure/"]
+COPY ["Domain/TaskManagementSystem.DataAccess.csproj", "TaskManagementSystem.DataAccess/"]
 COPY ["TaskManagementSystem.Domain/TaskManagementSystem.Domain.csproj", "TaskManagementSystem.Domain/"]
 # Add other project files if necessary
 
