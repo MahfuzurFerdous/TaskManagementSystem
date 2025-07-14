@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TaskManagementSystem.Application.DTOs
+﻿namespace TaskManagementSystem.Application.DTOs
 {
     public class TaskStandupLogListDto
     {
         public List<TaskStandupLogDto> Logs { get; set; } = new List<TaskStandupLogDto>();
-
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
         public int TotalCount { get; set; }

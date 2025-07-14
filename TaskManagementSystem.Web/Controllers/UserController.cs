@@ -10,7 +10,6 @@ using TaskManagementSystem.Web.Models;
 
 namespace TaskManagementSystem.Web.Controllers;
 
-
 public class UserController : Controller
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -20,7 +19,7 @@ public class UserController : Controller
     private readonly IUserProfileRepository _profileRepository;
     private readonly IWebHostEnvironment _env;
 
-    public UserController(UserManager<ApplicationUser> userManager,IUserModelFactory userModelFactory, IMapper mapper, IUserProfileService profileService,IUserProfileRepository userProfileRepository,IWebHostEnvironment env)
+    public UserController(UserManager<ApplicationUser> userManager, IUserModelFactory userModelFactory, IMapper mapper, IUserProfileService profileService, IUserProfileRepository userProfileRepository, IWebHostEnvironment env)
     {
         _userManager = userManager;
         _userModelFactory = userModelFactory;
@@ -45,7 +44,6 @@ public class UserController : Controller
 
         return View(model);
     }
-
 
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(string id)

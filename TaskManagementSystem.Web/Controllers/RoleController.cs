@@ -1,12 +1,9 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagementSystem.Application.DTOs;
 using TaskManagementSystem.Application.Interfaces;
-using TaskManagementSystem.Application.Services;
 using TaskManagementSystem.Domain.Entities;
-using TaskManagementSystem.Web.Models;
 
 namespace TaskManagementSystem.Web.Controllers;
 
@@ -18,7 +15,7 @@ public class RoleController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly INotificationService _notificationService;
 
-    public RoleController(IRoleModelFactory roleModelFactory,IRoleService roleService, UserManager<ApplicationUser> userManager, INotificationService notificationService)
+    public RoleController(IRoleModelFactory roleModelFactory, IRoleService roleService, UserManager<ApplicationUser> userManager, INotificationService notificationService)
     {
         _roleModelFactory = roleModelFactory;
         _roleService = roleService;

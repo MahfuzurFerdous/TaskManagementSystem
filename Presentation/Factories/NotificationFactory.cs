@@ -35,7 +35,7 @@ namespace TaskManagementSystem.Application.Factories
                     { "AssignedBy", taskCard.AssignedByUserName ?? "N/A" },
                     { "CreatedAt", taskCard.CreatedAt.ToString() },
                     { "UserName", manager.FullName ?? "User" },
-                    { "DueDate", taskCard.DueDate?.ToString() ?? "N/A" } 
+                    { "DueDate", taskCard.DueDate?.ToString() ?? "N/A" }
                 }),
                 RecipientEmails = new List<string> { manager.Email }
             };
@@ -102,19 +102,18 @@ namespace TaskManagementSystem.Application.Factories
                     { "TaskTitle", taskCard.Title },
                     { "TaskId", taskCard.Id.ToString() }
                 }),
-                RecipientEmails = uniqueRecipients.Select(r => r.Email!).ToList() 
+                RecipientEmails = uniqueRecipients.Select(r => r.Email!).ToList()
             };
 
             return message;
         }
-
 
         public async Task<NotificationMessageDto> CreateRoleAssignmentEmailAsync(ApplicationUser user, List<string> roles)
         {
             var templatePath = Path.Combine(_env.WebRootPath, "Templates", "Emails", "RoleAssigned.html");
             var template = await File.ReadAllTextAsync(templatePath);
 
-            var userName = user.FullName ?? user.UserName ?? string.Empty; 
+            var userName = user.FullName ?? user.UserName ?? string.Empty;
             var replacements = new Dictionary<string, string>
             {
                 { "UserName", userName },
@@ -133,6 +132,7 @@ namespace TaskManagementSystem.Application.Factories
                 Body = template
             };
         }
+
         public async Task<NotificationMessageDto> CreateTaskAssignmentMessageAsync(TaskCard taskCard)
         {
             if (string.IsNullOrEmpty(taskCard.AssignedToUserName))
@@ -180,6 +180,7 @@ namespace TaskManagementSystem.Application.Factories
                 RecipientEmails = new List<string> { user.Email ?? "" }
             };
         }
+
         public async Task<NotificationMessageDto> CreateTaskReassignmentMessageAsync(ApplicationUser user, TaskCard taskCard)
         {
             var templatePath = Path.Combine(_env.WebRootPath, "Templates", "Emails", "TaskReassigned.html");

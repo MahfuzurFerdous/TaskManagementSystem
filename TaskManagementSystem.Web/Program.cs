@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +12,6 @@ using TaskManagementSystem.DataAccess.Repositories.Implementations;
 using TaskManagementSystem.DataAccess.Repositories.Interfaces;
 using TaskManagementSystem.Domain.Entities;
 using TaskManagementSystem.Infrastructure.Identity;
-using TaskManagementSystem.Web.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,12 +46,16 @@ builder.Services.AddHostedService<QueuedEmailProcessor>();
 builder.Services.AddScoped<IQueuedEmailService, QueuedEmailService>();
 builder.Services.AddScoped<IQueuedEmailRepository, QueuedEmailRepository>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 builder.Services.AddRazorPages();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.AccessDeniedPath = "/Account/AccessDenied"; 
+    options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
 var app = builder.Build();

@@ -1,48 +1,160 @@
 ﻿@model TaskStandupLogListModel
 
-<div class="card card-primary card-outline">
+<!-- Standup Submission Form -->
+<div class="card card-primary card-outline mb-4">
     <div class="card-header">
-        <h3 class="card-title"><i class="fas fa-clipboard-list"></i> Standup Logs</h3>
+        <h3 class="card-title">
+            <i class="fas fa-pencil-alt"></i> Submit Daily Standup
+        </h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
     </div>
     <div class="card-body">
-        @if (!Model.Logs.Any())
+        <form id="standup-form">
+            <div class="form-group">
+                <label for="standup-note">
+                    <i class="fas fa-clipboard-list text-primary"></i> What did you work on today?
+                </label>
+                <textarea id="standup-note" name="note" class="form-control" rows="4"
+                          placeholder="Enter your daily update here...&#10;&#10;• What did you accomplish?&#10;• What are you working on next?&#10;• Any blockers or challenges?"></textarea>
+                <small class="form-text text-muted">
+                    <i class="fas fa-info-circle"></i> Share your progress, next steps, and any blockers you're facing.
+                </small>
+            </div>
+            <div class="form-group mb-0">
+                <button type="submit" id="submit-standup-btn" class="btn btn-primary" data-task-id="@Model.TaskId">
+                    <i class="fas fa-paper-plane"></i> Submit Standup
+                </button>
+                <button type="button" class="btn btn-secondary ml-2" onclick="clearForm()">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+            </div>
+        </form>
+        <div id="standup-message" class="mt-3"></div>
+    </div>
+</div>
+
+<!-- Standup Logs -->
+<div class="card card-info card-outline" id="standup-logs-container">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-history"></i> Standup History
+        </h3>
+        <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-tool" onclick="refreshLogs()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Logs == null || !Model.Logs.Any())
         {
-            <div class="alert alert-info mb-0">
-                <i class="fas fa-info-circle mr-1"></i>
-                No standup logs found for this task.
+            <div class="alert alert-info mb-0 mx-3 mt-3">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>No standup logs found.</strong> Be the first to submit a daily standup for this task!
             </div>
         }
         else
         {
-            <ul class="list-group">
+            <div class="timeline timeline-inverse">
                 @foreach (var log in Model.Logs.OrderByDescending(l => l.SubmittedAt))
                 {
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>@log.SubmittedBy</strong>
-                            <small class="text-muted">@log.SubmittedAt.ToString("g")</small>
+                    <div class="time-label">
+                        <span class="bg-primary">
+                            @log.SubmittedAt.ToString("MMM dd, yyyy")
+                        </span>
+                    </div>
+                    <div>
+                        <i class="fas fa-user bg-info"></i>
+                        <div class="timeline-item">
+                            <span class="time">
+                                <i class="fas fa-clock"></i> @log.SubmittedAt.ToString("hh:mm tt")
+                            </span>
+                            <h3 class="timeline-header">
+                                <strong>@log.SubmittedBy</strong> submitted a standup update
+                            </h3>
+                            <div class="timeline-body">
+                                <div class="card card-light">
+                                    <div class="card-body">
+                                        @Html.Raw(log.Note.Replace("\n", "<br />"))
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div>@log.Note</div>
-                    </li>
+                    </div>
                 }
-            </ul>
+                <div>
+                    <i class="fas fa-clock bg-gray"></i>
+                </div>
+            </div>
         }
-
     </div>
-</div>
 
-<ul class="pagination justify-content-center">
-    <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
-        <a class="page-link standup-page-link" href="#" data-page="@(Model.PageNumber - 1)">Previous</a>
-    </li>
-    @for (int i = 1; i <= Model.TotalPages; i++)
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
     {
-        <li class="page-item @(Model.PageNumber == i ? "active" : "")">
-            <a class="page-link standup-page-link" href="#" data-page="@i">@i</a>
-        </li>
+        <div class="card-footer">
+            <nav aria-label="Standup logs pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                        <a class="page-link standup-page-link" href="#" data-page="@(Model.PageNumber - 1)">
+                            <i class="fas fa-angle-left"></i> Previous
+                        </a>
+                    </li>
+                    @for (int i = Math.Max(1, Model.PageNumber - 2); i <= Math.Min(Model.TotalPages, Model.PageNumber + 2); i++)
+                    {
+                        <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                            <a class="page-link standup-page-link" href="#" data-page="@i">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link standup-page-link" href="#" data-page="@(Model.PageNumber + 1)">
+                            Next <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     }
-    <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
-        <a class="page-link standup-page-link" href="#" data-page="@(Model.PageNumber + 1)">Next</a>
-    </li>
-</ul>
+</div>
+@* <script> *@
+@*         $(document).off('submit', '#standup-form').on('submit', '#standup-form', function (e) { *@
+@*         e.preventDefault(); *@
 
+@*         const note = $('#standup-note').val().trim(); *@
+@*         const taskId = $('#submit-standup-btn').data('task-id'); *@
+
+@*         if (!note) { *@
+@*             $('#standup-message').html('<div class="alert alert-warning">Note cannot be empty.</div>'); *@
+@*             return; *@
+@*         } *@
+
+@*         $.ajax({ *@
+@*             url: '/TaskCard/SubmitStandupLog', *@
+@*             type: 'POST', *@
+@*             data: { *@
+@*                 taskId: taskId, *@
+@*                 note: note *@
+@*             }, *@
+@*             success: function (response) { *@
+@*                 if (response.success) { *@
+@*                     $('#standup-note').val(''); *@
+@*                     $('#standup-message').html('<div class="alert alert-success">Standup submitted successfully.</div>'); *@
+@*                     loadStandupLogs(taskId);  *@
+@*                 } else { *@
+@*                     $('#standup-message').html(`<div class="alert alert-danger">${response.message}</div>`); *@
+@*                 } *@
+@*             }, *@
+@*             error: function () { *@
+@*                 $('#standup-message').html('<div class="alert alert-danger">An error occurred while submitting.</div>'); *@
+@*             } *@
+@*         }); *@
+@*     }); *@
+
+@* </script> *@

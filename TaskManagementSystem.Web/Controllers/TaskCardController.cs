@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using TaskManagementSystem.Application.DTOs;
 using TaskManagementSystem.Application.Interfaces;
 using TaskManagementSystem.Domain.Entities;
@@ -16,14 +17,16 @@ namespace TaskManagementSystem.Web.Controllers
         private readonly ITaskCardModelFactory _taskCardModelFactory;
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<TaskCardController> _logger;
 
-        public TaskCardController(ITaskCardService taskCardService, UserManager<ApplicationUser> userManager, ITaskCardModelFactory taskCardModelFactory,IMapper mapper,INotificationService notificationService)
+        public TaskCardController(ITaskCardService taskCardService, UserManager<ApplicationUser> userManager, ITaskCardModelFactory taskCardModelFactory, IMapper mapper, INotificationService notificationService, ILogger<TaskCardController> logger)
         {
             _taskCardService = taskCardService;
             _userManager = userManager;
             _taskCardModelFactory = taskCardModelFactory;
             _mapper = mapper;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -58,7 +61,7 @@ namespace TaskManagementSystem.Web.Controllers
 
             var dto = _mapper.Map<CreateTaskCardDto>(model);
             dto.CreatedByUserName = currentUser.UserName;
-            dto.CreatedAt = DateTime.UtcNow.AddHours(6); 
+            dto.CreatedAt = DateTime.UtcNow.AddHours(6);
 
             try
             {
@@ -132,14 +135,18 @@ namespace TaskManagementSystem.Web.Controllers
             }
         }
 
-
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Index(TaskCardSearchModel searchModel, int pageNumber = 1, int pageSize = 10)
         {
-            var dtoModel = await _taskCardModelFactory.PrepareListAsync(pageNumber, pageSize);
+            searchModel.Page = pageNumber;
+            searchModel.PageSize = pageSize;
+            var searchDto = _mapper.Map<TaskCardSearchDto>(searchModel);
+
+            var dtoModel = await _taskCardModelFactory.PrepareListAsync(searchDto);
 
             var viewModel = new TaskCardListModel
             {
+                SearchModel = searchDto,
                 TaskCards = _mapper.Map<List<TaskCardViewModel>>(dtoModel.TaskCards),
                 PageNumber = dtoModel.PageNumber,
                 PageSize = dtoModel.PageSize,
@@ -148,6 +155,7 @@ namespace TaskManagementSystem.Web.Controllers
 
             return View(viewModel);
         }
+
 
         [Authorize(Roles = "User")]
         public async Task<IActionResult> UserIndex(int page = 1)
@@ -318,7 +326,6 @@ namespace TaskManagementSystem.Web.Controllers
             }
         }
 
-
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> ReassignTaskModal(int id)
@@ -368,8 +375,11 @@ namespace TaskManagementSystem.Web.Controllers
             var taskCard = await _taskCardService.GetByIdAsync(id);
             if (taskCard == null)
                 return NotFound();
+            var currentUser = await _userManager.GetUserAsync(User);
+            if (currentUser == null)
+                return NotFound();
 
-            var dto = await _taskCardModelFactory.PrepareEditTaskCardViewModelAsync(taskCard);
+            var dto = await _taskCardModelFactory.PrepareEditTaskCardViewModelAsync(taskCard,currentUser);
 
             var viewModel = _mapper.Map<EditTaskCardViewModel>(dto);
 
@@ -382,24 +392,27 @@ namespace TaskManagementSystem.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var dto = _mapper.Map<EditTaskCardDto>(viewModel) ?? new EditTaskCardDto(); 
-                var dtoWithUsers = await _taskCardModelFactory.GetAvailableUserSelectListAsync(dto);
-                var updatedViewModel = _mapper.Map<EditTaskCardViewModel>(dtoWithUsers);
-
-                return PartialView("_EditTaskCardPartial", updatedViewModel);
+                return BadRequest(new { success = false, message = "Validation failed." });
             }
-
 
             var taskCardToUpdate = await _taskCardService.GetByIdAsync(viewModel.Id);
             if (taskCardToUpdate == null)
-                return Json(new { success = false, message = "Task not found" });
+                return NotFound(new { success = false, message = "Task not found." });
 
             var dtoToUpdate = _mapper.Map<EditTaskCardDto>(viewModel);
             _mapper.Map(dtoToUpdate, taskCardToUpdate);
 
             await _taskCardService.UpdateTaskAsync(taskCardToUpdate);
 
-            return Json(new { success = true });
+            var currentUser = await _userManager.GetUserAsync(User);
+
+            if (currentUser == null || string.IsNullOrEmpty(currentUser.UserName))
+                return Unauthorized(new { success = false, message = "User not found." });
+
+            await _taskCardService.UpdateTaskStatusAsync(viewModel.Id, viewModel.Status, currentUser.UserName);
+
+            return Json(new { success = true, message = "Task updated successfully.", id = viewModel.Id });
+
         }
 
         [HttpPost]
@@ -414,14 +427,14 @@ namespace TaskManagementSystem.Web.Controllers
             return Json(new { success = true });
         }
 
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id, int standupPage = 1)
         {
-            var task = await _taskCardService.GetByIdAsync(id);
-            if (task == null)
+            var dto = await _taskCardModelFactory.PrepareTaskCardViewModelAsync(id, standupPage);
+            if (dto == null)
                 return NotFound();
 
-            var model = _mapper.Map<TaskCardViewModel>(task);
-            return PartialView("_Details", model);
+            var viewModel = _mapper.Map<TaskCardViewModel>(dto);
+            return View("Details", viewModel);
         }
 
         [HttpPost]
@@ -435,7 +448,7 @@ namespace TaskManagementSystem.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "User")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> SubmitStandupLog(int taskId, string note)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -456,7 +469,6 @@ namespace TaskManagementSystem.Web.Controllers
             }
         }
 
-
         [HttpGet]
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> GetStandupHistoryPartial(int taskId, int pageNumber = 1, int pageSize = 5)
@@ -468,7 +480,8 @@ namespace TaskManagementSystem.Web.Controllers
                 Logs = _mapper.Map<List<TaskStandupLogViewModel>>(dto.Logs),
                 PageNumber = dto.PageNumber,
                 PageSize = dto.PageSize,
-                TotalCount = dto.TotalCount
+                TotalCount = dto.TotalCount,
+                TaskId = taskId
             };
 
             return PartialView("_StandupLogPartial", model);
@@ -480,6 +493,25 @@ namespace TaskManagementSystem.Web.Controllers
         {
             return PartialView("_SubmitStandupPartial", taskId);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Update([FromBody] UpdateTaskCardDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await _taskCardModelFactory.UpdateTaskCardAsync(dto);
+                return Ok(new { message = "Task updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update task");
+                return StatusCode(500, new { error = "Internal server error." });
+            }
+        }
+
 
     }
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.DataAccess.Context;
 using TaskManagementSystem.DataAccess.Repositories.Interfaces;
 using TaskManagementSystem.Domain.Entities;
@@ -40,7 +35,6 @@ namespace TaskManagementSystem.DataAccess.Repositories.Implementations
             _context.UserProfiles.Update(profile);
             await _context.SaveChangesAsync();
         }
-
 
         public async Task<List<UserProfile>> GetAllProfilesAsync()
         {

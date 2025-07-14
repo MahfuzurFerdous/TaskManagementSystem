@@ -24,6 +24,9 @@ namespace TaskManagementSystem.Application.Services
             if (user == null)
                 return (false, "No account found with this email.");
 
+            if (string.IsNullOrEmpty(user.UserName))
+                return (false, "User account is invalid. Missing username.");
+
             if (!await _userManager.CheckPasswordAsync(user, password))
                 return (false, "Invalid password.");
 
@@ -34,8 +37,6 @@ namespace TaskManagementSystem.Application.Services
 
             return (false, "Login failed. Please try again.");
         }
-
-
 
         public async Task<(bool Success, string? ErrorMessage)> RegisterAsync(string fullName, string email, string password)
         {
@@ -59,7 +60,6 @@ namespace TaskManagementSystem.Application.Services
 
             return (true, null);
         }
-
 
         public async Task LogoutAsync()
         {

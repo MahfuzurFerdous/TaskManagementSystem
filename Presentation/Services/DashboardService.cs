@@ -14,7 +14,6 @@ namespace TaskManagementSystem.Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserProfileRepository _userProfileRepository;
 
-
         public DashboardService(AppDbContext context, UserManager<ApplicationUser> userManager, IUserProfileRepository userProfileRepository)
         {
             _context = context;
@@ -62,7 +61,7 @@ namespace TaskManagementSystem.Application.Services
 
             var data = await _context.TaskCards
                 .Where(t => t.IsCompleted && t.DueDate.HasValue && t.DueDate.Value.Year == currentYear)
-                .GroupBy(t => t.DueDate.Value.Month)
+                .GroupBy(t => t.DueDate!.Value.Month)
                 .Select(g => new { Month = g.Key, Count = g.Count() })
                 .ToListAsync();
 
@@ -79,7 +78,7 @@ namespace TaskManagementSystem.Application.Services
 
         public async Task<List<LatestUserDto>> GetLatestUsersAsync(int count = 5)
         {
-            var userProfiles = await _userProfileRepository.GetAllProfilesAsync(); // example async call
+            var userProfiles = await _userProfileRepository.GetAllProfilesAsync();
 
             return userProfiles
                 .OrderByDescending(u => u.CreatedOn)
@@ -92,9 +91,6 @@ namespace TaskManagementSystem.Application.Services
                 })
                 .ToList();
         }
-
-
-
 
         public async Task<List<CalendarEventDto>> GetCalendarEventsAsync()
         {

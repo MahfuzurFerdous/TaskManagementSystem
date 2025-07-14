@@ -10,8 +10,7 @@ namespace TaskManagementSystem.Web.Models
         public string? Title { get; set; }
 
         [Required]
-        public string? Description { get; set; } 
-
+        public string? Description { get; set; }
         public Domain.Enums.TaskStatus Status { get; set; }
         public string? AssignedToUserName { get; set; }
         public string? AssignedByUserName { get; set; }
@@ -42,6 +41,11 @@ namespace TaskManagementSystem.Web.Models
         public DateTime? AdminRejectedAt { get; set; }
         public string? ManagerRejectedBy { get; set; }
         public DateTime? ManagerRejectedAt { get; set; }
+        public List<TaskStatusChangeViewModel>? StatusChanges { get; set; }
+        public TaskStandupLogListModel? StandupLogList { get; set; }
+        public List<SelectListItem> StatusList { get; set; } = new();
+        public List<SelectListItem> AssignedToUserList { get; set; } = new();
+
 
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManagementSystem.Domain.Entities;
+﻿using TaskManagementSystem.Domain.Entities;
 
 namespace TaskManagementSystem.DataAccess.Repositories.Interfaces
 {
@@ -12,8 +7,7 @@ namespace TaskManagementSystem.DataAccess.Repositories.Interfaces
         Task CreateAsync(UserProfile profile);
         Task<UserProfile> GetByUserIdAsync(string userId);
         Task<List<UserProfile>> GetAllProfilesAsync();
-        Task UpdateAsync(UserProfile profile); 
-        //Task DeleteAsync(UserProfile profile);
+        Task UpdateAsync(UserProfile profile);
     }
 
 }

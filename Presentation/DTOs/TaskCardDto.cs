@@ -7,7 +7,6 @@ namespace TaskManagementSystem.Application.DTOs
         public int Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-
         public Domain.Enums.TaskStatus Status { get; set; }
         public string? AssignedToUserName { get; set; }
         public string? AssignedByUserName { get; set; }
@@ -38,6 +37,10 @@ namespace TaskManagementSystem.Application.DTOs
         public string? ManagerRejectionReason { get; set; }
         public string? AdminRejectionReason { get; set; }
         public List<SelectListItem>? AvailableUsers { get; set; }
+        public List<TaskStatusChangeDto>? StatusChanges { get; set; }
+        public TaskStandupLogListDto? StandupLogList { get; set; }
+        public List<SelectListItem> StatusList { get; set; } = new();
+
 
     }
 

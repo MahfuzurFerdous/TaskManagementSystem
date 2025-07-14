@@ -1,22 +1,18 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
-using TaskManagementSystem.Application.Interfaces;
+﻿using TaskManagementSystem.Application.Interfaces;
 using TaskManagementSystem.Domain.Entities;
 
 namespace TaskManagementSystem.Application.Services
 {
     public class NotificationService : INotificationService
     {
-        private readonly IEmailSender _emailSender;
         private readonly INotificationFactory _notificationFactory;
         private readonly IQueuedEmailService _queuedEmailService;
 
-        public NotificationService(IEmailSender emailSender, INotificationFactory notificationFactory, IQueuedEmailService queuedEmailService)
+        public NotificationService(INotificationFactory notificationFactory, IQueuedEmailService queuedEmailService)
         {
-            _emailSender = emailSender;
             _notificationFactory = notificationFactory;
             _queuedEmailService = queuedEmailService;
         }
-
 
         public async Task NotifyTaskCreationAsync(TaskCard taskCard)
         {
@@ -69,7 +65,6 @@ namespace TaskManagementSystem.Application.Services
             }
         }
 
-
         public async Task NotifyRoleAssignmentAsync(ApplicationUser user, List<string> roles)
         {
             var message = await _notificationFactory.CreateRoleAssignmentEmailAsync(user, roles);
@@ -86,6 +81,7 @@ namespace TaskManagementSystem.Application.Services
                 await _queuedEmailService.EnqueueEmailAsync(queuedEmail);
             }
         }
+
         public async Task NotifyTaskAssignmentAsync(TaskCard taskCard)
         {
             var message = await _notificationFactory.CreateTaskAssignmentMessageAsync(taskCard);

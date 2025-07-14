@@ -21,7 +21,6 @@ namespace TaskManagementSystem.DataAccess.Repositories.Implementations
                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
-
         public async Task AddAsync(TaskCard taskCard)
         {
             await _context.TaskCards.AddAsync(taskCard);
@@ -62,7 +61,7 @@ namespace TaskManagementSystem.DataAccess.Repositories.Implementations
         {
             var query = _context.TaskCards
                 .Where(tc => tc.AssignedToUserName == username)
-                .OrderByDescending(tc => tc.CreatedAt); 
+                .OrderByDescending(tc => tc.CreatedAt);
 
             var totalCount = await query.CountAsync();
 
@@ -91,7 +90,7 @@ namespace TaskManagementSystem.DataAccess.Repositories.Implementations
         public IQueryable<TaskCard> GetAllTaskCards()
         {
             return _context.TaskCards
-                .AsNoTracking(); 
+                .AsNoTracking();
         }
 
         public IQueryable<TaskStandupLog> GetByTaskCardId(int taskCardId)

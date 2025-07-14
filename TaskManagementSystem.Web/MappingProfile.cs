@@ -74,6 +74,12 @@ namespace TaskManagementSystem.Web
             // Mapping TaskStandupLog models and DTOs
             CreateMap<TaskStandupLog, TaskStandupLogDto>().ReverseMap();
             CreateMap<TaskStandupLogDto, TaskStandupLogViewModel>().ReverseMap();
+
+            CreateMap<TaskStatusChangeDto, TaskStatusChangeViewModel>().ReverseMap();
+            CreateMap<TaskStandupLogListDto, TaskStandupLogListModel>().ReverseMap();
+            CreateMap<TaskStandupLogDto, TaskStandupLogViewModel>().ReverseMap();
+
+            CreateMap<TaskCardSearchDto, TaskCardSearchModel>().ReverseMap();
         }
     }
 }

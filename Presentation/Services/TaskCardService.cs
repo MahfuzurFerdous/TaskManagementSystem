@@ -1,5 +1,4 @@
-﻿using System.Runtime.ConstrainedExecution;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +24,21 @@ namespace TaskManagementSystem.Application.Services
             _mapper = mapper;
 
         }
+
         public async Task CreateAsync(CreateTaskCardDto dto, string assignedByUserName)
         {
+            if (string.IsNullOrWhiteSpace(dto.AssignedToUserName))
+                throw new ArgumentException("AssignedToUserName cannot be null or empty.", nameof(dto.AssignedToUserName));
+
+            if (string.IsNullOrWhiteSpace(dto.CreatedByUserName))
+                throw new ArgumentException("CreatedByUserName cannot be null or empty.", nameof(dto.CreatedByUserName));
+
             var assignedTo = await _userManager.FindByNameAsync(dto.AssignedToUserName);
             var createdBy = await _userManager.FindByNameAsync(dto.CreatedByUserName);
 
             if (assignedTo == null || createdBy == null)
                 throw new ArgumentException("User not found.");
+
             var card = new TaskCard
             {
                 Title = dto.Title,
@@ -49,7 +56,7 @@ namespace TaskManagementSystem.Application.Services
 
         public async Task<PagedResult<TaskCardDto>> GetAllAsync(int pageNumber, int pageSize)
         {
-            var query = _taskCardRepository.GetAllTaskCards(); 
+            var query = _taskCardRepository.GetAllTaskCards();
             var totalCount = await query.CountAsync();
 
             var items = await query
@@ -87,6 +94,7 @@ namespace TaskManagementSystem.Application.Services
                 TotalCount = totalCount
             };
         }
+
         public async Task<bool> RequestCompletionAsync(int taskCardId, string currentUser)
         {
             var card = await _taskCardRepository.GetByIdAsync(taskCardId);
@@ -97,11 +105,13 @@ namespace TaskManagementSystem.Application.Services
 
             return true;
         }
+
         public async Task<List<UserTaskCardDto>> GetTaskCardsByUserNameAsync(string userName)
         {
             var taskCards = await _taskCardRepository.GetByAssignedUserNameAsync(userName);
             return _mapper.Map<List<UserTaskCardDto>>(taskCards);
         }
+
         public async Task<TaskCardListViewDto> GetPagedTaskCardsByUserNameAsync(string username, int pageIndex, int pageSize)
         {
             pageIndex = Math.Max(0, pageIndex);
@@ -139,6 +149,7 @@ namespace TaskManagementSystem.Application.Services
 
             await UpdateTaskStatusAsync(task.Id, newStatus, currentUser);
         }
+
         public async Task ReassignTaskAsync(int taskId, string newAssignedUserName, string currentUser)
         {
             if (string.IsNullOrWhiteSpace(currentUser))
@@ -152,6 +163,7 @@ namespace TaskManagementSystem.Application.Services
 
             await UpdateTaskStatusAsync(task.Id, Domain.Enums.TaskStatus.Reassigned, currentUser);
         }
+
         public async Task<TaskCard> GetByIdAsync(int taskId)
         {
             var task = await _taskCardRepository.GetByIdAsync(taskId);
@@ -160,6 +172,7 @@ namespace TaskManagementSystem.Application.Services
 
             return task;
         }
+
         public async Task UpdateTaskStatusAsync(int taskId, Domain.Enums.TaskStatus newStatus, string currentUser)
         {
             var taskCard = await _taskCardRepository.GetByIdAsync(taskId);
@@ -172,6 +185,7 @@ namespace TaskManagementSystem.Application.Services
 
             await _taskCardRepository.UpdateAsync(taskCard);
         }
+
         public async Task SubmitStandupAsync(int taskCardId, string note, string currentUser)
         {
             var task = await _taskCardRepository.GetByIdAsync(taskCardId);
@@ -211,6 +225,7 @@ namespace TaskManagementSystem.Application.Services
                 PageSize = pageSize
             };
         }
+
         public async Task UpdateTaskAsync(TaskCard task)
         {
             if (task == null)
@@ -227,14 +242,155 @@ namespace TaskManagementSystem.Application.Services
 
             await _taskCardRepository.DeleteAsync(id);
         }
+
         public async Task<TaskCard?> GetByTitleAndCreatorAsync(string title, string createdByUserName)
         {
             return await _taskCardRepository.GetByTitleAndCreatorAsync(title, createdByUserName);
         }
+
         public async Task<TaskCard?> GetByTitleAndAssignedAsync(string title, string createdByUserName)
         {
             return await _taskCardRepository.GetByTitleAndAssignedAsync(title, createdByUserName);
         }
+
+
+        public Task<List<TaskStatusChangeDto>> GetStatusChangesAsync(TaskCard task)
+        {
+            var changes = new List<TaskStatusChangeDto>();
+
+            if (task.AssignedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.AssignedToUser,
+                    ChangedAt = task.AssignedAt.Value,
+                    ChangedBy = task.AssignedByUserName ?? "System"
+                });
+            }
+            if (task.StartedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.InProgress,
+                    ChangedBy = task.AssignedToUserName ?? "User",
+                    ChangedAt = task.StartedAt.Value,
+                });
+            }
+            if (task.IsRequestedForCompletion && task.CompletionRequestedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.CompletionRequested,
+                    ChangedBy = task.AssignedToUserName ?? "User",
+                    ChangedAt = task.CompletionRequestedAt.Value,
+                });
+            }
+            if (task.IsManagerApproved && task.ManagerApprovedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.ManagerApproved,
+                    ChangedBy = task.ManagerApprovedBy ?? "Manager",
+                    ChangedAt = task.ManagerApprovedAt.Value,
+                });
+            }
+            if (task.IsRejectedByManager && task.ManagerRejectedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.RejectedByManager,
+                    ChangedBy = task.ManagerRejectedBy ?? "Manager",
+                    ChangedAt = task.ManagerRejectedAt.Value,
+                    Remarks = task.ManagerRejectionReason ?? string.Empty
+                });
+            }
+            if (task.IsAdminApproved && task.AdminApprovedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.AdminApproved,
+                    ChangedBy = task.AdminApprovedBy ?? "Admin",
+                    ChangedAt = task.AdminApprovedAt.Value,
+                });
+            }
+            if (task.IsRejectedByAdmin && task.AdminRejectedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.RejectedByAdmin,
+                    ChangedBy = task.AdminRejectedBy ?? "Admin",
+                    ChangedAt = task.AdminRejectedAt.Value,
+                    Remarks = task.AdminRejectionReason ?? string.Empty
+                });
+            }
+            if (task.CompletedAt.HasValue)
+            {
+                changes.Add(new TaskStatusChangeDto
+                {
+                    Status = Domain.Enums.TaskStatus.Completed,
+                    ChangedBy = task.AdminApprovedBy ?? "Admin",
+                    ChangedAt = task.CompletedAt.Value,
+                });
+            }
+            var result = changes.OrderByDescending(c => c.ChangedAt).ToList();
+            return Task.FromResult(result);
+        }
+
+
+        public async Task<TaskStandupLogListDto> GetStandupLogsAsync(TaskCard task, int page, int pageSize)
+        {
+            if (task == null)
+                throw new ArgumentNullException(nameof(task));
+
+            var logs = task.StandupLogs?
+                .OrderByDescending(log => log.SubmittedAt)
+                .ToList() ?? new List<TaskStandupLog>();
+
+            var totalCount = logs.Count;
+
+            var pagedLogs = logs
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(log => new TaskStandupLogDto
+                {
+                    SubmittedBy = log.SubmittedBy,
+                    SubmittedAt = log.SubmittedAt,
+                    Note = log.Note
+                })
+                .ToList();
+
+            return await Task.FromResult(new TaskStandupLogListDto
+            {
+                Logs = pagedLogs,
+                PageNumber = page,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            });
+        }
+
+        public async Task<List<ApplicationUser>> GetAllUsersAsync()
+        {
+            return await Task.FromResult(_userManager.Users.ToList());
+        }
+
+        public async Task<IList<TaskCard>> SearchTaskCardsAsync(TaskCardSearchDto model)
+        {
+            var query = _taskCardRepository.GetAllTaskCards();
+
+            if (!string.IsNullOrWhiteSpace(model.Title))
+                query = query.Where(t => t.Title.Contains(model.Title));
+
+            if (!string.IsNullOrWhiteSpace(model.AssignedToUserName))
+                query = query.Where(t => t.AssignedToUserName != null && t.AssignedToUserName.Contains(model.AssignedToUserName));
+
+            if (model.Status.HasValue)
+                query = query.Where(t => t.Status == model.Status.Value);
+
+            return await query
+                .OrderByDescending(t => t.CreatedAt)
+                .ToListAsync();
+        }
+
 
     }
 

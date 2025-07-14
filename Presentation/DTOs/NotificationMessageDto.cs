@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TaskManagementSystem.Application.DTOs
+﻿namespace TaskManagementSystem.Application.DTOs
 {
     public class NotificationMessageDto
     {
@@ -8,7 +6,7 @@ namespace TaskManagementSystem.Application.DTOs
         public string Subject { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
         public DateTime SentAt { get; set; } = DateTime.Now;
-        public string From { get; set; }
+        public string? From { get; set; }
     }
 
 }

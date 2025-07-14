@@ -23,6 +23,10 @@ namespace TaskManagementSystem.Application.Interfaces
         Task DeleteTaskAsync(int id);
         Task<TaskCard?> GetByTitleAndCreatorAsync(string title, string createdByUserName);
         Task<TaskCard?> GetByTitleAndAssignedAsync(string title, string createdByUserName);
+        Task<TaskStandupLogListDto> GetStandupLogsAsync(TaskCard task, int page, int pageSize);
+        Task<List<TaskStatusChangeDto>> GetStatusChangesAsync(TaskCard task);
+        Task<List<ApplicationUser>> GetAllUsersAsync();
+        Task<IList<TaskCard>> SearchTaskCardsAsync(TaskCardSearchDto model);
     }
 
 }

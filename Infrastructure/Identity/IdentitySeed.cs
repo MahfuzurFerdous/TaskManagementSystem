@@ -37,7 +37,7 @@ namespace TaskManagementSystem.Infrastructure.Identity
                 {
                     foreach (var error in result.Errors)
                     {
-                        Console.WriteLine($"Error: {error.Description}"); 
+                        Console.WriteLine($"Error: {error.Description}");
                     }
                 }
             }

@@ -14,7 +14,7 @@ namespace TaskManagementSystem.Web.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IDashboardService _dashboardService;
 
-        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager,IDashboardService dashboardService)
+        public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager, IDashboardService dashboardService)
         {
             _logger = logger;
             _userManager = userManager;
@@ -48,7 +48,7 @@ namespace TaskManagementSystem.Web.Controllers
                 CompletedTaskCount = await _dashboardService.GetCompletedTaskCountAsync(),
                 PendingTaskCount = await _dashboardService.GetPendingTaskCountAsync(),
                 RegisteredUserCount = await _dashboardService.GetUserCountAsync(),
-                GuestVisitorCount = await _dashboardService.GetGuestVisitorCountAsync(), // Optional
+                GuestVisitorCount = await _dashboardService.GetGuestVisitorCountAsync(),
                 LatestUsers = await _dashboardService.GetLatestUsersAsync(),
                 CalendarEvents = await _dashboardService.GetCalendarEventsAsync(),
                 ChartLabels = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun" },
@@ -66,7 +66,7 @@ namespace TaskManagementSystem.Web.Controllers
         [AllowAnonymous]
         public IActionResult Welcome()
         {
-            if (User?.Identity?.IsAuthenticated == true) 
+            if (User?.Identity?.IsAuthenticated == true)
             {
                 return RedirectToAction("Index");
             }
@@ -79,6 +79,7 @@ namespace TaskManagementSystem.Web.Controllers
         {
             return View();
         }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

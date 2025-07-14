@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using TaskManagementSystem.Domain.Entities;
+﻿using TaskManagementSystem.Domain.Entities;
 
 namespace TaskManagementSystem.Web.Helpers
 {
@@ -14,8 +13,8 @@ namespace TaskManagementSystem.Web.Helpers
             {
                 case Domain.Enums.TaskStatus.AssignedToUser:
                     card.AssignedAt = DateTime.UtcNow;
-                    break;                
-                
+                    break;
+
                 case Domain.Enums.TaskStatus.AssignedToManager:
                     card.AssignedAt = DateTime.UtcNow;
                     card.IsManagerApproved = false;
@@ -44,11 +43,17 @@ namespace TaskManagementSystem.Web.Helpers
                 case Domain.Enums.TaskStatus.InProgress:
                     card.StartedAt = DateTime.UtcNow;
                     card.IsStarted = true;
+                    card.IsCompleted = false;
                     break;
 
                 case Domain.Enums.TaskStatus.CompletionRequested:
                     card.CompletionRequestedAt = DateTime.UtcNow;
                     card.IsRequestedForCompletion = true;
+                    card.IsRejectedByAdmin = false;
+                    card.IsRejectedByManager = false;
+                    card.IsCompleted = false;
+                    card.IsManagerApproved = false;
+                    card.IsAdminApproved = false;
                     card.IsRejectedByAdmin = false;
                     card.IsRejectedByManager = false;
                     break;
@@ -83,8 +88,8 @@ namespace TaskManagementSystem.Web.Helpers
                     card.IsRejectedByManager = true;
                     card.IsRequestedForCompletion = false;
                     card.IsStarted = false;
-                    break;                
-                
+                    break;
+
                 case Domain.Enums.TaskStatus.RejectedByAdmin:
                     card.AdminRejectedBy = actor;
                     card.AdminRejectedAt = DateTime.UtcNow;

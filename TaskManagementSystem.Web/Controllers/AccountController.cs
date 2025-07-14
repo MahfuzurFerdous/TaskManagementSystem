@@ -26,7 +26,7 @@ public class AccountController : Controller
         if (success)
             return RedirectToAction("Index", "Home");
 
-        if (!string.IsNullOrEmpty(error)) 
+        if (!string.IsNullOrEmpty(error))
         {
             ModelState.AddModelError("", error);
         }
@@ -48,7 +48,7 @@ public class AccountController : Controller
         if (success)
             return RedirectToAction("Login");
 
-        if (!string.IsNullOrEmpty(error)) 
+        if (!string.IsNullOrEmpty(error))
         {
             ModelState.AddModelError("", error);
         }

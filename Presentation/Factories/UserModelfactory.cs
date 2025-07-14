@@ -58,8 +58,6 @@ namespace TaskManagementSystem.Application.Factories
             };
         }
 
-
-
         public async Task<UserDto> PrepareDetailsAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);

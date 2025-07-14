@@ -7,7 +7,6 @@
         public List<string> AvailableRoles { get; set; }
         public List<string> SelectedRoles { get; set; }
         public DateTime RoleChangedAt { get; set; } = DateTime.Now;
-
         public RoleAssignmentDto()
         {
             AvailableRoles = new List<string>();

@@ -3,6 +3,82 @@
 @{
     ViewData["Title"] = "Task Cards";
 }
+<form asp-action="" method="get" class="mb-3">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-search"></i>
+                Search Tasks
+            </h3>
+            <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i class="fas fa-heading"></i>
+                                </span>
+                            </div>
+                            <input asp-for="SearchModel.Title" class="form-control" placeholder="Enter title..." />
+                        </div>
+                        <span asp-validation-for="SearchModel.Title" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="assignedTo">Assigned To</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                            </div>
+                            <input asp-for="SearchModel.AssignedToUserName" class="form-control" placeholder="Enter username..." />
+                        </div>
+                        <span asp-validation-for="SearchModel.AssignedToUserName" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <i class="fas fa-tasks"></i>
+                                </span>
+                            </div>
+                            <select asp-for="SearchModel.Status" asp-items="Html.GetEnumSelectList<TaskManagementSystem.Domain.Enums.TaskStatus>()" class="form-control">
+                                <option value="">All Statuses</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="SearchModel.Status" class="text-danger small"></span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <div class="d-block">
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-block mt-1" onclick="clearSearchForm()">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 <div class="content-header">
     <div class="container-fluid">
@@ -25,12 +101,10 @@
                 <thead class="thead-dark">
                     <tr>
                         <th>Title</th>
-                        <th>Description</th>
                         <th>Assigned To</th>
                         <th>Assigned By</th>
                         <th>Due Date</th>
                         <th>Status</th>
-                        <th>Standup</th>
                         <th>Completion Request</th>
                         <th class="text-center">Actions</th>
 						<th class="text-center">Details</th>
@@ -41,7 +115,6 @@
                     {
                         <tr>
                             <td>@card.Title</td>
-                            <td>@card.Description</td>
                             <td>@card.AssignedToUserName</td>
                             <td>@card.AssignedByUserName</td>
                             <td>@(card.DueDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
@@ -51,13 +124,6 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-outline-dark view-standup-btn" data-task-id="@card.Id">
-                                    <i class="fas fa-clipboard-list"></i> Standups
-                                </button>
-
-                            </td>
-                            <td class="text-center">
-                                @* First, check if the task is rejected by either Manager or Admin *@
                                 @if (card.IsRejectedByManager || card.IsRejectedByAdmin)
                                 {
                                     <div class="text-center">
@@ -147,9 +213,6 @@
 
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <button class="btn btn-sm btn-info edit-btn mr-1" data-id="@card.Id">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
                                     <button class="btn btn-sm btn-danger delete-btn" data-id="@card.Id">
                                         <i class="fas fa-trash-alt"></i> Delete
                                     </button>
@@ -157,13 +220,19 @@
 
                             </td>
                             <td class="text-center">
-                                @if (User.IsInRole("Admin"))
-                                {
-                                <button class="btn btn-sm btn-secondary details-btn" data-id="@card.Id" title="View Details">
-                                    <i class="fas fa-eye"></i> Details
-                                </button>
-                                }
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                    <a asp-controller="TaskCard"
+                                       asp-action="Details"
+                                       asp-route-id="@card.Id"
+                                       class="btn btn-sm btn-secondary"
+                                       title="View Details">
+                                        <i class="fas fa-eye"></i> Details
+                                    </a>
+                                    }
+                            </td>
                         </tr>
+
                     }
                 </tbody>
             </table>
@@ -193,15 +262,6 @@
     </nav>
 }
 
-
-<!-- Edit Modal -->
-<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" id="editModalContent">
-            <!-- Edit form loaded via AJAX -->
-        </div>
-    </div>
-</div>
 <div class="modal fade" id="assignTaskModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content" id="assignModalContent">
@@ -217,20 +277,24 @@
     </div>
 </div>
 
-<!-- Standup Modal -->
-<div class="modal fade" id="standupModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content" id="standupModalContent">
-            <!-- Content loaded via AJAX -->
-        </div>
-    </div>
-</div>
-
 
 
 
 @section Scripts {
     <script>
+                // Define clearSearchForm globally, outside any ready block
+        function clearSearchForm() {
+            document.querySelector('input[name="SearchModel.Title"]').value = '';
+            document.querySelector('input[name="SearchModel.AssignedToUserName"]').value = '';
+            document.querySelector('select[name="SearchModel.Status"]').value = '';
+
+            if (typeof $.fn.select2 !== 'undefined') {
+                $('select[name="SearchModel.Status"]').val(null).trigger('change');
+            }
+
+            document.querySelector('form').submit();
+        }
+
         $(document).ready(function () {
 
             // Approve button click handler
@@ -342,48 +406,6 @@
                 });
             });
 
-            // Edit button click handler - load modal
-            $(document).on('click', '.edit-btn', function () {
-                const cardId = $(this).data('id');
-                $.ajax({
-                    url: '/TaskCard/Edit',
-                    type: 'GET',
-                    data: { id: cardId },
-                    success: function (html) {
-                        $('#editModalContent').html(html);
-                        $('#editTaskModal').modal('show');
-                    },
-                    error: function () {
-                        alert("An error occurred while loading the edit form.");
-                    }
-                });
-            });
-
-            // Edit form submit via AJAX
-            $(document).on('submit', '#editTaskForm', function (e) {
-                e.preventDefault();
-                var form = $(this);
-                var formData = new FormData(form[0]);
-
-                $.ajax({
-                    url: form.attr('action'),
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-                        if (response.success) {
-                            $('#editTaskModal').modal('hide');
-                            location.reload();
-                        } else {
-                            $('#editModalContent').html(response);
-                        }
-                    },
-                    error: function () {
-                        alert("An error occurred while saving the changes.");
-                    }
-                });
-            });
 
             // Assign button click - load modal
             $(document).on('click', '.assign-btn', function () {
@@ -415,61 +437,6 @@
                 });
             });
 
-                    $(document).on('click', '.details-btn', function () {
-            const taskId = $(this).data('id');
-
-            $.ajax({
-                url: `/TaskCard/Details`,
-                type: 'GET',
-                data: { id: taskId },
-                success: function (html) {
-                    $('#detailsModalContent').html(html);
-                    $('#taskDetailsModal').modal('show');
-                },
-                error: function () {
-                    alert("An error occurred while loading task details.");
-                }
-            });
-        });
-
-$(document).on('click', '.view-standup-btn', function () {
-        const taskId = $(this).data('task-id'); 
-
-
-    $.ajax({
-        url: '/TaskCard/GetStandupHistoryPartial',
-        type: 'GET',
-        data: { taskId: taskId ,pageNumber: 1},
-        success: function (html) {
-            $('#standupModalContent').html(html);
-            $('#standupModalContent').data('task-id', taskId);
-            $('#standupModal').modal('show');
-        },
-        error: function () {
-            alert("Failed to load standup logs.");
-        }
-    });
-});
-
-        $(document).on('click', '.standup-page-link', function (e) {
-            e.preventDefault();
-            const page = $(this).data('page');
-            const taskId = $('#standupModalContent').data('task-id');
-
-            $.ajax({
-                url: '/TaskCard/GetStandupHistoryPartial',
-                type: 'GET',
-                data: { taskId: taskId, pageNumber: page },
-                success: function (html) {
-                    $('#standupModalContent').html(html);
-                            $('#standupModalContent').data('task-id', taskId);
-                },
-                error: function () {
-                    alert("Failed to load standup logs.");
-                }
-            });
-        });
-
         $(document).on('click', '.reject-btn', function () {
             const cardId = $(this).data('id');
             const level = $(this).data('level');
@@ -498,7 +465,13 @@ $(document).on('click', '.view-standup-btn', function () {
             });
         });
 
-
+            if (typeof $.fn.select2 !== 'undefined') {
+                $('.select2').select2({
+                    theme: 'bootstrap4',
+                    placeholder: 'Select status...',
+                    allowClear: true
+                });
+            }
         });
     </script>
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TaskManagementSystem.Domain.Entities;
+﻿using TaskManagementSystem.Domain.Entities;
 
 namespace TaskManagementSystem.DataAccess.Repositories.Interfaces
 {
@@ -23,8 +18,6 @@ namespace TaskManagementSystem.DataAccess.Repositories.Interfaces
         IQueryable<TaskStandupLog> GetByTaskCardId(int taskCardId);
         Task<TaskCard?> GetByTitleAndCreatorAsync(string title, string createdByUserName);
         Task<TaskCard?> GetByTitleAndAssignedAsync(string title, string assignedToUserName);
-
-
 
     }
 }

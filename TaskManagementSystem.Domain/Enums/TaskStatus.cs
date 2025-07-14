@@ -11,7 +11,8 @@
         Completed,      // Final approved by admin (completed)
         Reassigned,          // Reassigned (restart cycle)
         RejectedByAdmin,    // Rejected by Admin
-        RejectedByManager  // Rejected by Manager
+        RejectedByManager,  // Rejected by Manager
+        AdminApproved,        // Admin approved the task
     }
 
 }

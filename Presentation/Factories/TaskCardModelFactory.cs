@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementSystem.Application.DTOs;
 using TaskManagementSystem.Application.Interfaces;
-using TaskManagementSystem.Application.Services;
 using TaskManagementSystem.Domain.Entities;
 
 namespace TaskManagementSystem.Application.Factories
@@ -51,20 +50,42 @@ namespace TaskManagementSystem.Application.Factories
             }).ToList();
         }
 
-        public async Task<EditTaskCardDto> PrepareEditTaskCardViewModelAsync(TaskCard taskCard)
+        public async Task<EditTaskCardDto> PrepareEditTaskCardViewModelAsync(TaskCard taskCard, ApplicationUser currentUser)
         {
             var model = _mapper.Map<EditTaskCardDto>(taskCard);
 
-            var users = await _userManager.Users.ToListAsync();
+            model.Status = taskCard.Status;
 
-            model.AvailableUsers = users.Select(u => new SelectListItem
+            model.StatusList = Enum.GetValues(typeof(Domain.Enums.TaskStatus))
+                .Cast<Domain.Enums.TaskStatus>()
+                .Select(status => new SelectListItem
+                {
+                    Value = status.ToString(), 
+                    Text = status.ToString(), 
+                    Selected = status == taskCard.Status
+                }).ToList();
+
+            var availableUsers = new List<ApplicationUser>();
+
+            if (await _userManager.IsInRoleAsync(currentUser, "Admin"))
             {
-                Text = u.UserName,
-                Value = u.UserName
+                availableUsers = (await _userManager.GetUsersInRoleAsync("Manager")).ToList();
+            }
+            else if (await _userManager.IsInRoleAsync(currentUser, "Manager"))
+            {
+                availableUsers = (await _userManager.GetUsersInRoleAsync("User")).ToList();
+            }
+
+            model.AvailableUsers = availableUsers.Select(u => new SelectListItem
+            {
+                Value = u.UserName,
+                Text = u.FullName ?? u.UserName,
+                Selected = u.UserName == taskCard.AssignedToUserName
             }).ToList();
 
             return model;
         }
+
 
         public async Task<EditTaskCardDto> GetAvailableUserSelectListAsync(EditTaskCardDto dto)
         {
@@ -80,7 +101,6 @@ namespace TaskManagementSystem.Application.Factories
 
             return dto;
         }
-
 
         public Task<TaskCardListViewDto> PrepareUserListModelAsync(TaskCardListViewDto dto)
         {
@@ -106,7 +126,7 @@ namespace TaskManagementSystem.Application.Factories
             return new AssignToUserViewModelDto
             {
                 TaskCardId = task.Id,
-                AssignedToUserName = task.AssignedToUserName ?? string.Empty, 
+                AssignedToUserName = task.AssignedToUserName ?? string.Empty,
                 AvailableUsers = usersInRole.Select(u => new SelectListItem
                 {
                     Text = u.UserName,
@@ -120,7 +140,7 @@ namespace TaskManagementSystem.Application.Factories
         {
             ArgumentNullException.ThrowIfNull(user);
 
-            var task = await _taskCardService.GetByIdAsync(taskId); 
+            var task = await _taskCardService.GetByIdAsync(taskId);
 
             string targetRole = user.IsInRole("Admin") ? "Manager" : "User";
             var usersInRole = await _userManager.GetUsersInRoleAsync(targetRole);
@@ -199,18 +219,19 @@ namespace TaskManagementSystem.Application.Factories
             return dto;
         }
 
-        public async Task<TaskCardListDtoModel> PrepareListAsync(int pageNumber, int pageSize)
+        public async Task<TaskCardListDtoModel> PrepareListAsync(TaskCardSearchDto searchModel)
         {
-            var pagedDto = await _taskCardService.GetAllAsync(pageNumber, pageSize);
+            var result = await _taskCardService.SearchTaskCardsAsync(searchModel);
 
             return new TaskCardListDtoModel
             {
-                TaskCards = pagedDto.Items.ToList(),
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = pagedDto.TotalCount
+                TaskCards = _mapper.Map<List<TaskCardDto>>(result.ToList()), 
+                PageNumber = searchModel.Page,
+                PageSize = searchModel.PageSize,
+                TotalCount = result.Count 
             };
         }
+
 
         public async Task<TaskCard> PrepareTaskCardForRejectionAsync(int taskId, string level, string rejectedBy, string reason)
         {
@@ -240,6 +261,125 @@ namespace TaskManagementSystem.Application.Factories
             return task;
         }
 
+        public async Task<TaskCardDto> PrepareTaskCardViewModelAsync(int id, int standupPage = 1, int standupPageSize = 5)
+        {
+            var task = await _taskCardService.GetByIdAsync(id);
+
+            if (task == null)
+                throw new ArgumentException("Task not found");
+
+            var model = new TaskCardDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description,
+                AssignedToUserName = task.AssignedToUserName,
+                DueDate = task.DueDate,
+                Status = task.Status,
+                CreatedAt = task.CreatedAt,
+                StatusChanges = await _taskCardService.GetStatusChangesAsync(task),
+                StandupLogList = await _taskCardService.GetStandupLogsAsync(task, standupPage, standupPageSize)
+            };
+
+            return model;
+        }
+
+        public async Task UpdateTaskCardAsync(UpdateTaskCardDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            var task = await _taskCardService.GetByIdAsync(dto.Id);
+            if (task == null)
+                throw new ArgumentException("Task not found.");
+
+            task.Title = dto.Title ?? string.Empty;
+            task.Description = dto.Description ?? string.Empty;
+            task.AssignedToUserName = dto.AssignedToUserName ?? string.Empty;
+            task.DueDate = dto.DueDate;
+            task.Status = dto.Status;
+
+            await _taskCardService.UpdateTaskAsync(task);
+        }
+
+        public async Task<TaskCardDto?> PrepareTaskCardDtoAsync(int id)
+        {
+            var taskCardEntity = await _taskCardService.GetByIdAsync(id);
+            if (taskCardEntity == null) return null;
+
+            var dto = new TaskCardDto
+            {
+                Id = taskCardEntity.Id,
+                Title = taskCardEntity.Title,
+                Description = taskCardEntity.Description,
+                AssignedToUserName = taskCardEntity.AssignedToUserName,
+                DueDate = taskCardEntity.DueDate,
+                CreatedAt = taskCardEntity.CreatedAt,
+                Status = taskCardEntity.Status,
+            };
+
+            return dto;
+        }
+        //public Task<List<SelectListItem>> PrepareTaskStatusListAsync()
+        //{
+        //    var list = Enum.GetValues(typeof(Domain.Enums.TaskStatus))
+        //        .Cast<Domain.Enums.TaskStatus>()
+        //        .Select(e => new SelectListItem
+        //        {
+        //            Value = e.ToString(),
+        //            Text = e.ToString()
+        //        })
+        //        .ToList();
+
+        //    return Task.FromResult(list);
+        //}
+
+        //public async Task<List<SelectListItem>> PrepareAssignedUserListAsync(ApplicationUser currentUser)
+        //{
+        //    var list = new List<SelectListItem>();
+
+        //    if (await _userManager.IsInRoleAsync(currentUser, "Admin"))
+        //    {
+        //        var managers = await _userManager.GetUsersInRoleAsync("Manager");
+        //        list = managers.Select(m => new SelectListItem
+        //        {
+        //            Value = m.UserName,
+        //            Text = m.FullName ?? m.UserName
+        //            Selected = 
+        //        }).ToList();
+        //    }
+        //    else if (await _userManager.IsInRoleAsync(currentUser, "Manager"))
+        //    {
+        //        var users = await _userManager.GetUsersInRoleAsync("User");
+        //        list = users.Select(u => new SelectListItem
+        //        {
+        //            Value = u.UserName,
+        //            Text = u.FullName ?? u.UserName
+        //        }).ToList();
+        //    }
+
+        //    return list;
+        //}
+
+        public async Task<TaskCardListDtoModel> PrepareTaskCardListModelAsync(TaskCardSearchDto searchModel)
+        {
+            var taskCards = await _taskCardService.SearchTaskCardsAsync(searchModel);
+
+            var model = new TaskCardListDtoModel    
+            {
+                SearchModel = searchModel,
+                TaskCards = taskCards.Select(tc => new TaskCardDto
+                {
+                    Id = tc.Id,
+                    Title = tc.Title,
+                    AssignedToUserName = tc.AssignedToUserName,
+                    Status = tc.Status,
+                    DueDate = tc.DueDate
+                }).ToList()
+            };
+
+            return model;
+        }
 
     }
 
