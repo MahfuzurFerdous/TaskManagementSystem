@@ -9,7 +9,6 @@ namespace TaskManagementSystem.Application.Interfaces
     {
         Task<CreateTaskCardDto> PrepareCreateTaskCardViewModelAsync();
         Task<List<SelectListItem>> GetUserSelectListAsync();
-        //Task<EditTaskCardDto> PrepareEditTaskCardViewModelAsync(TaskCard taskCard);
         Task<EditTaskCardDto> GetAvailableUserSelectListAsync(EditTaskCardDto dto);
         Task<TaskCardListViewDto> PrepareUserListModelAsync(TaskCardListViewDto dto);
         Task<AssignToUserViewModelDto> PrepareAssignToUserModelAsync(TaskCard task, ClaimsPrincipal user);
@@ -23,8 +22,6 @@ namespace TaskManagementSystem.Application.Interfaces
         Task<TaskCardDto> PrepareTaskCardViewModelAsync(int id, int standupPage = 1, int standupPageSize = 5);
         Task UpdateTaskCardAsync(UpdateTaskCardDto dto);
         Task<TaskCardDto?> PrepareTaskCardDtoAsync(int id);
-        //Task<List<SelectListItem>> PrepareTaskStatusListAsync();
-        //Task<List<SelectListItem>> PrepareAssignedUserListAsync(ApplicationUser currentUser);
         Task<EditTaskCardDto> PrepareEditTaskCardViewModelAsync(TaskCard taskCard, ApplicationUser currentUser);
 
 

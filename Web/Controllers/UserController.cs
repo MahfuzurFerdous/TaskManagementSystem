@@ -16,7 +16,6 @@ public class UserController : Controller
     private readonly IUserModelFactory _userModelFactory;
     private readonly IMapper _mapper;
     private readonly IUserProfileService _profileService;
-    private readonly IUserProfileRepository _profileRepository;
     private readonly IWebHostEnvironment _env;
 
     public UserController(UserManager<ApplicationUser> userManager, IUserModelFactory userModelFactory, IMapper mapper, IUserProfileService profileService, IUserProfileRepository userProfileRepository, IWebHostEnvironment env)
@@ -25,7 +24,6 @@ public class UserController : Controller
         _userModelFactory = userModelFactory;
         _mapper = mapper;
         _profileService = profileService;
-        _profileRepository = userProfileRepository;
         _env = env;
     }
 
@@ -53,13 +51,23 @@ public class UserController : Controller
         return RedirectToAction("Index");
     }
 
-    [Authorize(Roles = "Admin,User,Manager")]
     public async Task<IActionResult> Profile()
     {
         var user = await _userManager.GetUserAsync(User);
 
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Index");
+        }
+
         var dto = await _profileService.GetProfileForEditAsync(user.Id);
 
+        if (dto == null)
+        {
+            TempData["Error"] = "Profile data not found.";
+            return RedirectToAction("Index");
+        }
 
         var model = _mapper.Map<UserProfileViewModel>(dto);
 
@@ -74,6 +82,12 @@ public class UserController : Controller
             return View(model);
 
         var user = await _userManager.GetUserAsync(User);
+
+        if (user == null)
+        {
+            TempData["Error"] = "User not found.";
+            return RedirectToAction("Profile");
+        }
 
         var dto = _mapper.Map<UserProfileDto>(model);
 

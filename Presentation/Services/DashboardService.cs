@@ -85,7 +85,7 @@ namespace TaskManagementSystem.Application.Services
                 .Take(count)
                 .Select(u => new LatestUserDto
                 {
-                    FullName = u.FullName,
+                    FullName = u.FullName ?? string.Empty,
                     AvatarUrl = string.IsNullOrEmpty(u.AvatarUrl) ? "/images/default-avatar.png" : u.AvatarUrl,
                     RegistrationDate = u.CreatedOn
                 })
@@ -99,7 +99,7 @@ namespace TaskManagementSystem.Application.Services
                 .Select(t => new CalendarEventDto
                 {
                     title = t.Title,
-                    start = t.DueDate.Value.ToString("yyyy-MM-dd"),
+                    start = t.DueDate!.Value.ToString("yyyy-MM-dd"), 
                     color = t.IsCompleted ? "#28a745" : "#ffc107"
                 })
                 .ToListAsync();

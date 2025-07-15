@@ -27,6 +27,9 @@ namespace TaskManagementSystem.Application.Services
 
         public async Task CreateAsync(CreateTaskCardDto dto, string assignedByUserName)
         {
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new ArgumentException("Title cannot be null or empty.", nameof(dto.Title));
+
             if (string.IsNullOrWhiteSpace(dto.AssignedToUserName))
                 throw new ArgumentException("AssignedToUserName cannot be null or empty.", nameof(dto.AssignedToUserName));
 
@@ -41,7 +44,7 @@ namespace TaskManagementSystem.Application.Services
 
             var card = new TaskCard
             {
-                Title = dto.Title,
+                Title = dto.Title ?? throw new ArgumentNullException(nameof(dto.Title), "Title cannot be null."),
                 Description = dto.Description,
                 AssignedToUserName = dto.AssignedToUserName,
                 AssignedByUserName = assignedByUserName,

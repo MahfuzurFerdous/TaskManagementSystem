@@ -26,7 +26,6 @@ namespace TaskManagementSystem.Web.Models
         public Domain.Enums.TaskStatus Status { get; set; }
         public List<SelectListItem> AvailableUsers { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> StatusList { get; set; } = new();
-        //public List<SelectListItem> AssignedToUserList { get; set; } = new();
 
     }
 

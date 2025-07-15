@@ -320,46 +320,6 @@ namespace TaskManagementSystem.Application.Factories
 
             return dto;
         }
-        //public Task<List<SelectListItem>> PrepareTaskStatusListAsync()
-        //{
-        //    var list = Enum.GetValues(typeof(Domain.Enums.TaskStatus))
-        //        .Cast<Domain.Enums.TaskStatus>()
-        //        .Select(e => new SelectListItem
-        //        {
-        //            Value = e.ToString(),
-        //            Text = e.ToString()
-        //        })
-        //        .ToList();
-
-        //    return Task.FromResult(list);
-        //}
-
-        //public async Task<List<SelectListItem>> PrepareAssignedUserListAsync(ApplicationUser currentUser)
-        //{
-        //    var list = new List<SelectListItem>();
-
-        //    if (await _userManager.IsInRoleAsync(currentUser, "Admin"))
-        //    {
-        //        var managers = await _userManager.GetUsersInRoleAsync("Manager");
-        //        list = managers.Select(m => new SelectListItem
-        //        {
-        //            Value = m.UserName,
-        //            Text = m.FullName ?? m.UserName
-        //            Selected = 
-        //        }).ToList();
-        //    }
-        //    else if (await _userManager.IsInRoleAsync(currentUser, "Manager"))
-        //    {
-        //        var users = await _userManager.GetUsersInRoleAsync("User");
-        //        list = users.Select(u => new SelectListItem
-        //        {
-        //            Value = u.UserName,
-        //            Text = u.FullName ?? u.UserName
-        //        }).ToList();
-        //    }
-
-        //    return list;
-        //}
 
         public async Task<TaskCardListDtoModel> PrepareTaskCardListModelAsync(TaskCardSearchDto searchModel)
         {
