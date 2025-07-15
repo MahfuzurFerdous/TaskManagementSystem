@@ -344,7 +344,6 @@
                 $('#assignModalContent').html(html);
                 $('#assignTaskModal').modal('show');
 
-                // Initialize select2 inside modal after content loads
                 $('.select2bs4').select2({
                     theme: 'bootstrap4',
                     width: '100%'
@@ -363,12 +362,10 @@
                 success: function (res) {
                     if (res.success) {
                         $('#assignTaskModal').modal('hide');
-                        location.reload(); // or update UI dynamically
+                        location.reload(); 
                     } else {
-                        // Partial view with validation errors or other issues
                         $('#assignModalContent').html(res);
 
-                        // Re-initialize select2 after replacing content
                         $('.select2bs4').select2({
                             theme: 'bootstrap4',
                             width: '100%'

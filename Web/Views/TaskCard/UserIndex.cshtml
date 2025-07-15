@@ -94,7 +94,6 @@
     }
 </div>
 
-<!-- Standup Log Modal -->
 <div class="modal fade" id="standupFormModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-md" role="document">
         <div class="modal-content" id="standupFormContent">
@@ -112,7 +111,6 @@
 
         $(document).ready(function () {
 
-            // Start Task Button
             $('.start-task-btn').click(function () {
                 const card = $(this).closest('.card');
                 const taskId = card.data('task-id');
@@ -135,7 +133,6 @@
                 });
             });
 
-            // Request Completion Button
             $('.request-completion-btn').click(function () {
                 const card = $(this).closest('.card');
                 const taskId = card.data('task-id');
@@ -159,7 +156,6 @@
                 });
             });
 
-            // Open Standup Form Modal
             $(document).on('click', '.open-standup-form', function () {
                 const taskId = $(this).data('task-id');
 
@@ -169,7 +165,6 @@
                 });
             });
 
-            // Standup Form Submit
             $(document).on('click', '#submit-standup-btn', function (e) {
                 e.preventDefault();
                 const taskId = $(this).data('task-id');
@@ -199,7 +194,6 @@
                 });
             });
 
-            // Optional: Refresh Logs
         window.refreshLogs = function () {
             const taskId = $('#current-task-id').val();
             const currentPage = $('#current-page-number').val() || 1;
@@ -209,9 +203,6 @@
             });
         };
 
-
-
-            // Alert Helper
             function showAlert(type, message) {
                 const alertHtml = `
                     <div class="alert alert-${type} alert-dismissible fade show" role="alert">

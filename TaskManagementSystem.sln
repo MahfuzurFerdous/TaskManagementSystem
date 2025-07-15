@@ -5,15 +5,15 @@ VisualStudioVersion = 17.13.35931.197 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.DataAccess", "Domain\TaskManagementSystem.DataAccess.csproj", "{E4946F8A-3DE0-4993-9601-D4A7D28AE6EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.DataAccess", "DataAccess\TaskManagementSystem.DataAccess.csproj", "{E4946F8A-3DE0-4993-9601-D4A7D28AE6EB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.Infrastructure", "Infrastructure\TaskManagementSystem.Infrastructure.csproj", "{DFF23DA8-0D87-4470-88CD-E7FE71662650}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.Application", "Presentation\TaskManagementSystem.Application.csproj", "{EFF46CC6-30D1-4A9D-BA3B-3249516DA1FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.Domain", "TaskManagementSystem.Domain\TaskManagementSystem.Domain.csproj", "{FC662977-8C3B-45B7-BA5F-B013D5681740}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.Domain", "Domain\TaskManagementSystem.Domain.csproj", "{FC662977-8C3B-45B7-BA5F-B013D5681740}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.Web", "TaskManagementSystem.Web\TaskManagementSystem.Web.csproj", "{B22AF923-34B9-4208-BFA8-C6FBACB361C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementSystem.Web", "Web\TaskManagementSystem.Web.csproj", "{B22AF923-34B9-4208-BFA8-C6FBACB361C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -49,10 +49,7 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Right Side: Status History + Standup Logs -->
             <div class="col-md-6">
-                <!-- Status Change History -->
                 <div class="card card-info">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -113,13 +110,12 @@
                     </div>
                 </div>
 
-                <!-- Standup Logs -->
                 <div id="standup-log-container">
                     @await Html.PartialAsync("_StandupLogPartial", Model.StandupLogList)
                 </div>
-            </div> <!-- End of Right Column -->
+            </div> 
 
-        </div> <!-- End of Row -->
+        </div> 
     </div>
 </section>
 
@@ -129,14 +125,12 @@
         $('#standup-message').html('');
     }
 
-
     function loadStandupLogs(taskId, page = 1) {
         $("#standup-log-container").html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
 
         $.get(`/TaskCard/GetStandupHistoryPartial?taskId=${taskId}&pageNumber=${page}`, function (html) {
             $("#standup-log-container").html(html);
 
-            // Bind the form handler here AFTER partial is injected
             $('#standup-form').on('submit', function (e) {
                 e.preventDefault();
 
@@ -177,12 +171,11 @@
 
     $(document).ready(function () {
         const taskId = @Model.Id;
-    // Load edit partial
+
     $("#edit-task-container").load(`/TaskCard/Edit?id=${taskId}`, function (response, status, xhr) {
         if (status === "error") {
             $("#edit-task-container").html('<div class="alert alert-danger">Failed to load task form.</div>');
         } else {
-            // Now attach submit handler AFTER form is loaded
             $(document).on('submit', '#editTaskForm', function (e) {
                 console.log('editTaskForm submit intercepted');
                 e.preventDefault();
