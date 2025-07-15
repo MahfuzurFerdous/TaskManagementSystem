@@ -126,38 +126,3 @@
         </div>
     }
 </div>
-@* <script> *@
-@*         $(document).on('submit', '#standup-form', function (e) { *@
-@*         e.preventDefault(); *@
-
-@*         const note = $('#standup-note').val().trim(); *@
-@*         const taskId = $('#submit-standup-btn').data('task-id'); *@
-
-@*         if (!note) { *@
-@*             $('#standup-message').html('<div class="alert alert-warning">Note cannot be empty.</div>'); *@
-@*             return; *@
-@*         } *@
-
-@*         $.ajax({ *@
-@*             url: '/TaskCard/SubmitStandupLog', *@
-@*             type: 'POST', *@
-@*             data: { *@
-@*                 taskId: taskId, *@
-@*                 note: note *@
-@*             }, *@
-@*             success: function (response) { *@
-@*                 if (response.success) { *@
-@*                     $('#standup-note').val(''); *@
-@*                     $('#standup-message').html('<div class="alert alert-success">Standup submitted successfully.</div>'); *@
-@*                     loadStandupLogs(taskId);  *@
-@*                 } else { *@
-@*                     $('#standup-message').html(`<div class="alert alert-danger">${response.message}</div>`); *@
-@*                 } *@
-@*             }, *@
-@*             error: function () { *@
-@*                 $('#standup-message').html('<div class="alert alert-danger">An error occurred while submitting.</div>'); *@
-@*             } *@
-@*         }); *@
-@*     }); *@
-
-@* </script> *@

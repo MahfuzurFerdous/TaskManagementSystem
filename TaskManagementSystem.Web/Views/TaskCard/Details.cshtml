@@ -124,6 +124,12 @@
 </section>
 
 <script>
+        function clearForm() {
+        $('#standup-note').val('');
+        $('#standup-message').html('');
+    }
+
+
     function loadStandupLogs(taskId, page = 1) {
         $("#standup-log-container").html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
 
@@ -171,8 +177,6 @@
 
     $(document).ready(function () {
         const taskId = @Model.Id;
-
-
     // Load edit partial
     $("#edit-task-container").load(`/TaskCard/Edit?id=${taskId}`, function (response, status, xhr) {
         if (status === "error") {
