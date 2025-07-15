@@ -59,15 +59,21 @@ namespace TaskManagementSystem.Web.Controllers
                 return View(model);
             }
 
+            if (string.IsNullOrEmpty(model.Title))
+            {
+                ModelState.AddModelError("", "Task title cannot be null or empty.");
+                model.AvailableUsers = await _taskCardModelFactory.GetManagersSelectListAsync();
+                return View(model);
+            }
+
             var dto = _mapper.Map<CreateTaskCardDto>(model);
             dto.CreatedByUserName = currentUser.UserName;
             dto.CreatedAt = DateTime.UtcNow.AddHours(6);
 
             try
             {
-
                 await _taskCardService.CreateAsync(dto, currentUser.UserName);
-                var createdTask = await _taskCardService.GetByTitleAndCreatorAsync(dto.Title, currentUser.UserName);
+                var createdTask = await _taskCardService.GetByTitleAndCreatorAsync(dto.Title!, currentUser.UserName);
 
                 if (createdTask != null)
                 {
@@ -448,7 +454,6 @@ namespace TaskManagementSystem.Web.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> SubmitStandupLog(int taskId, string note)
         {
             var user = await _userManager.GetUserAsync(User);
@@ -470,7 +475,6 @@ namespace TaskManagementSystem.Web.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> GetStandupHistoryPartial(int taskId, int pageNumber = 1, int pageSize = 5)
         {
             var dto = await _taskCardService.GetStandupLogsAsync(taskId, pageNumber, pageSize);

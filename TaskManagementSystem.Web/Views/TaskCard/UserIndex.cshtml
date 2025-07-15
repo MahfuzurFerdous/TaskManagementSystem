@@ -154,6 +154,58 @@
                 });
             });
 
+            // Open Standup Form Modal
+            $(document).on('click', '.open-standup-form', function () {
+                const taskId = $(this).data('task-id');
+
+                $.get('@Url.Action("GetStandupHistoryPartial", "TaskCard")', { taskId: taskId }, function (html) {
+                    $('#standupFormContent').html(html);
+                    $('#standupFormModal').modal('show');
+                });
+            });
+
+            // Standup Form Submit
+            $(document).on('click', '#submit-standup-btn', function (e) {
+                e.preventDefault();
+                const taskId = $(this).data('task-id');
+                const note = $('#standup-note').val();
+
+                if (!note.trim()) {
+                    $('#standup-message').html('<div class="alert alert-warning">Note cannot be empty.</div>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/TaskCard/SubmitStandupLog',
+                    type: 'POST',
+                    data: { taskId: taskId, note: note },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#standup-note').val('');
+                            $('#standup-message').html('<div class="alert alert-success">Standup submitted successfully.</div>');
+                            refreshLogs(taskId);
+                        } else {
+                            $('#standup-message').html(`<div class="alert alert-danger">${response.message}</div>`);
+                        }
+                    },
+                    error: function () {
+                        $('#standup-message').html('<div class="alert alert-danger">An error occurred. Please try again.</div>');
+                    }
+                });
+            });
+
+            // Optional: Refresh Logs
+        window.refreshLogs = function () {
+            const taskId = $('#current-task-id').val();
+            const currentPage = $('#current-page-number').val() || 1;
+
+            $.get('@Url.Action("GetStandupHistoryPartial", "TaskCard")', { taskId: taskId, page: currentPage }, function (html) {
+                $('#standupFormContent').html(html);
+            });
+        };
+
+
+
             // Alert Helper
             function showAlert(type, message) {
                 const alertHtml = `
@@ -166,45 +218,7 @@
                 $('#alerts').html(alertHtml);
             }
 
-        $(document).on('click', '#submit-standup-btn', function () {
-            const taskId = $(this).data('task-id');
-            const note = $('#standup-note').val();
-
-            if (!note.trim()) {
-                $('#standup-message').html('<div class="alert alert-warning">Note cannot be empty.</div>');
-                return;
-            }
-
-            $.ajax({
-                url: '/TaskCard/SubmitStandupLog',
-                type: 'POST',
-                data: { taskId: taskId, note: note },
-                success: function (response) {
-                    if (response.success) {
-                        $('#standup-note').val('');
-                        $('#standup-message').html('<div class="alert alert-success">Standup submitted successfully.</div>');
-                    } else {
-                        $('#standup-message').html(`<div class="alert alert-danger">${response.message}</div>`);
-                    }
-                },
-                error: function () {
-                    $('#standup-message').html('<div class="alert alert-danger">An error occurred. Please try again.</div>');
-                }
-            });
-        });
-
-        $(document).on('click', '.open-standup-form', function () {
-            const taskId = $(this).data('task-id');
-
-            $.get('/TaskCard/GetStandupFormPartial', { taskId: taskId }, function (html) {
-                $('#standupFormContent').html(html);
-                $('#standupFormModal').modal('show');
-            });
-        });
-
-
-
-
         });
     </script>
 }
+
